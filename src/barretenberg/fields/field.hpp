@@ -520,6 +520,41 @@ template <typename FieldParams> class field
         }
         aligned_free(temporaries);
     }
+
+    static inline std::vector<field_t> compute_coset_generators(const size_t n, const uint64_t subgroup_size)
+    {
+        std::vector<field_t> result;
+        if (n > 0)
+        {
+            result.emplace_back(multiplicative_generator);
+        }
+        field_t work_variable = add(multiplicative_generator, one);
+
+
+        while (result.size() < n)
+        {
+            // work_variable contains a new field element, and we need to test that, for all previous vector elements,
+            // result[i] / work_variable is not a member of our subgroup
+            field_t work_inverse = invert(work_variable);
+            bool valid = true;
+            for (auto k : result)
+            {
+                field_t target_element = mul(k, work_inverse);
+                field_t subgroup_check = pow_small(target_element, subgroup_size);
+                if (eq(subgroup_check, one))
+                {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid)
+            {
+                result.emplace_back(work_variable);
+            }
+        }
+
+        return result;
+    }
 }; // class field
 
 } // namespace barretenberg
