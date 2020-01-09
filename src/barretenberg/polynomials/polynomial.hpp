@@ -66,4 +66,5 @@ private:
     size_t max_size;
     size_t allocated_pages;
 };
+typedef polynomial polynomials[program_width];
 }

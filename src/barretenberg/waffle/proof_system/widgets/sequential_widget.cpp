@@ -44,18 +44,18 @@ ProverSequentialWidget& ProverSequentialWidget::operator=(ProverSequentialWidget
     return *this;
 }
 
-fr::field_t ProverSequentialWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverSequentialWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
     barretenberg::fr::field_t old_alpha = barretenberg::fr::mul(alpha_base, barretenberg::fr::invert(alpha_step));
-    q_o_next.ifft(circuit_state.small_domain);
+    q_o_next.ifft(fft_state.small_domain);
 
-    polynomial q_o_next_fft = polynomial(q_o_next, circuit_state.mid_domain.size);
+    polynomial q_o_next_fft = polynomial(q_o_next, fft_state.mid_domain.size);
 
-    q_o_next_fft.coset_fft_with_constant(circuit_state.mid_domain, old_alpha);
+    q_o_next_fft.coset_fft_with_constant(fft_state.mid_domain, old_alpha);
 
-    ITERATE_OVER_DOMAIN_START(circuit_state.mid_domain);
-        fr::__mul(circuit_state.w_o_fft.at(2 * i + 4), q_o_next_fft.at(i), q_o_next_fft.at(i)); // w_l * q_m = rdx
-        fr::__add(circuit_state.quotient_mid.at(i), q_o_next_fft.at(i), circuit_state.quotient_mid.at(i));
+    ITERATE_OVER_DOMAIN_START(fft_state.mid_domain);
+        fr::__mul(fft_state.w_o_fft.at(2 * i + 4), q_o_next_fft.at(i), q_o_next_fft.at(i)); // w_l * q_m = rdx
+        fr::__add(fft_state.quotient_mid.at(i), q_o_next_fft.at(i), fft_state.quotient_mid.at(i));
     ITERATE_OVER_DOMAIN_END;
 
     return alpha_base;

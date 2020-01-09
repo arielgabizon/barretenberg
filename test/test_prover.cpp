@@ -169,15 +169,15 @@ TEST(prover, compute_quotient_polynomial)
     waffle::Prover state(n);
     generate_test_data(state);
 
-    waffle::compute_permutation_lagrange_base_single(state.sigma_1, state.sigma_1_mapping, state.circuit_state.small_domain);
-    waffle::compute_permutation_lagrange_base_single(state.sigma_2, state.sigma_2_mapping, state.circuit_state.small_domain);
-    waffle::compute_permutation_lagrange_base_single(state.sigma_3, state.sigma_3_mapping, state.circuit_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_1, state.sigma_1_mapping, state.fft_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_2, state.sigma_2_mapping, state.fft_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_3, state.sigma_3_mapping, state.fft_state.small_domain);
     state.compute_quotient_polynomial();
 
     // check that the max degree of our quotient polynomial is 3n
     for (size_t i = 3 * n; i < 4 * n; ++i)
     {
-        EXPECT_EQ(fr::eq(state.circuit_state.quotient_large.at(i), fr::zero), true);
+        EXPECT_EQ(fr::eq(state.fft_state.quotient_large.at(i), fr::zero), true);
     }
 }
 
@@ -186,18 +186,18 @@ TEST(prover, compute_linearisation_coefficients)
 {
     size_t n = 256;
 
-    waffle::plonk_circuit_state state(n);
+    waffle::plonk_fft_state state(n);
     generate_test_data(state);
 
-    waffle::compute_permutation_lagrange_base_single(state.sigma_1, state.sigma_1_mapping, state.circuit_state.small_domain);
-    waffle::compute_permutation_lagrange_base_single(state.sigma_2, state.sigma_2_mapping, state.circuit_state.small_domain);
-    waffle::compute_permutation_lagrange_base_single(state.sigma_3, state.sigma_3_mapping, state.circuit_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_1, state.sigma_1_mapping, state.fft_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_2, state.sigma_2_mapping, state.fft_state.small_domain);
+    waffle::compute_permutation_lagrange_base_single(state.sigma_3, state.sigma_3_mapping, state.fft_state.small_domain);
     state.compute_quotient_polynomial();
     state.compute_quotient_commitment();
 
     fr::field_t t_eval = state.compute_linearisation_coefficients();
 
-    polynomial_arithmetic::lagrange_evaluations lagrange_evals = polynomial_arithmetic::get_lagrange_evaluations(state.challenges.z, state.circuit_state.small_domain);
+    polynomial_arithmetic::lagrange_evaluations lagrange_evals = polynomial_arithmetic::get_lagrange_evaluations(state.challenges.z, state.fft_state.small_domain);
 
     fr::field_t alpha_pow[6];
     fr::__copy(state.challenges.alpha, alpha_pow[0]);

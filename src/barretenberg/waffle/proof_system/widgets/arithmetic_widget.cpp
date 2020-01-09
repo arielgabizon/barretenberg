@@ -63,37 +63,37 @@ ProverArithmeticWidget& ProverArithmeticWidget::operator=(ProverArithmeticWidget
     return *this;
 }
 
-fr::field_t ProverArithmeticWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverArithmeticWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
-    q_m.ifft(circuit_state.small_domain);
-    q_l.ifft(circuit_state.small_domain);
-    q_r.ifft(circuit_state.small_domain);
-    q_o.ifft(circuit_state.small_domain);
-    q_c.ifft(circuit_state.small_domain);
+    q_m.ifft(fft_state.small_domain);
+    q_l.ifft(fft_state.small_domain);
+    q_r.ifft(fft_state.small_domain);
+    q_o.ifft(fft_state.small_domain);
+    q_c.ifft(fft_state.small_domain);
 
-    polynomial q_m_fft = polynomial(q_m, circuit_state.mid_domain.size);
-    polynomial q_l_fft = polynomial(q_l, circuit_state.mid_domain.size);
-    polynomial q_r_fft = polynomial(q_r, circuit_state.mid_domain.size);
-    polynomial q_o_fft = polynomial(q_o, circuit_state.mid_domain.size);
-    polynomial q_c_fft = polynomial(q_c, circuit_state.mid_domain.size);
+    polynomial q_m_fft = polynomial(q_m, fft_state.mid_domain.size);
+    polynomial q_l_fft = polynomial(q_l, fft_state.mid_domain.size);
+    polynomial q_r_fft = polynomial(q_r, fft_state.mid_domain.size);
+    polynomial q_o_fft = polynomial(q_o, fft_state.mid_domain.size);
+    polynomial q_c_fft = polynomial(q_c, fft_state.mid_domain.size);
 
-    q_m_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_l_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_r_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_o_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_c_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
+    q_m_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_l_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_r_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_o_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_c_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
 
-    ITERATE_OVER_DOMAIN_START(circuit_state.mid_domain);
-        fr::__mul(circuit_state.w_l_fft.at(2 * i), q_m_fft.at(i), q_m_fft.at(i)); // w_l * q_m = rdx
-        fr::__mul(q_m_fft.at(i), circuit_state.w_r_fft.at(2 * i), q_m_fft.at(i)); // w_l * w_r * q_m = rdx
-        fr::__mul(circuit_state.w_l_fft.at(2 * i), q_l_fft.at(i), q_l_fft.at(i)); // w_l * q_l = rdi
-        fr::__mul(circuit_state.w_r_fft.at(2 * i), q_r_fft.at(i), q_r_fft.at(i)); // w_r * q_r = rsi
-        fr::__mul(circuit_state.w_o_fft.at(2 * i), q_o_fft.at(i),  q_o_fft.at(i)); // w_o * q_o = r8
+    ITERATE_OVER_DOMAIN_START(fft_state.mid_domain);
+        fr::__mul(fft_state.w_l_fft.at(2 * i), q_m_fft.at(i), q_m_fft.at(i)); // w_l * q_m = rdx
+        fr::__mul(q_m_fft.at(i), fft_state.w_r_fft.at(2 * i), q_m_fft.at(i)); // w_l * w_r * q_m = rdx
+        fr::__mul(fft_state.w_l_fft.at(2 * i), q_l_fft.at(i), q_l_fft.at(i)); // w_l * q_l = rdi
+        fr::__mul(fft_state.w_r_fft.at(2 * i), q_r_fft.at(i), q_r_fft.at(i)); // w_r * q_r = rsi
+        fr::__mul(fft_state.w_o_fft.at(2 * i), q_o_fft.at(i),  q_o_fft.at(i)); // w_o * q_o = r8
         fr::__add(q_m_fft.at(i), q_l_fft.at(i), q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l = rdx
         fr::__add(q_r_fft.at(i), q_o_fft.at(i),  q_r_fft.at(i)); // q_r * w_r + q_o * w_o = rsi
         fr::__add(q_m_fft.at(i), q_r_fft.at(i),  q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l + q_r * w_r + q_o * w_o = rdx
         fr::__add(q_m_fft.at(i), q_c_fft.at(i),  q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l + q_r * w_r + q_o * w_o + q_c = rdx
-        fr::__add(circuit_state.quotient_mid.at(i), q_m_fft.at(i), circuit_state.quotient_mid.at(i));
+        fr::__add(fft_state.quotient_mid.at(i), q_m_fft.at(i), fft_state.quotient_mid.at(i));
     ITERATE_OVER_DOMAIN_END;
 
     return fr::mul(alpha_base, alpha_step);

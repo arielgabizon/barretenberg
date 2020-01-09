@@ -22,7 +22,8 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS ON)
-
+INCLUDE(CheckFunctionExists)
+check_function_exists(getentropy HAVE_GETENTROPY)
 if(APPLE)
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(OpenMP_C_FLAGS "-fopenmp")
@@ -69,7 +70,7 @@ if(DISABLE_SHENANIGANS)
     add_definitions(-DDISABLE_SHENANIGANS=1)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wno-format -Wno-conversion")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wno-format -Wno-conversion -fpermissive")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -save-temps")
 
 if(WIN32)

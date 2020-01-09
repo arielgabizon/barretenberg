@@ -10,7 +10,7 @@
 #include "../../reference_string/reference_string.hpp"
 #include "../../waffle_types.hpp"
 
-#include "../circuit_state.hpp"
+#include "../fft_state.hpp"
 
 namespace waffle
 {
@@ -113,7 +113,7 @@ class ProverBaseWidget
 
     virtual barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base,
                                                                     const barretenberg::fr::field_t& alpha_step,
-                                                                    CircuitFFTState& circuit_state) = 0;
+                                                                    CircuitFFTState& fft_state) = 0;
     virtual barretenberg::fr::field_t compute_linear_contribution(const barretenberg::fr::field_t& alpha_base,
                                                                   const barretenberg::fr::field_t&,
                                                                   const waffle::plonk_proof& proof,

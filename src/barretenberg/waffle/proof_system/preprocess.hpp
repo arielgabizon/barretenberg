@@ -22,13 +22,13 @@ inline Verifier preprocess(const Prover& prover)
     };
 
     // copy polynomials so that we don't mutate inputs
-    compute_permutation_lagrange_base_single(polys[0], prover.sigma_1_mapping, prover.circuit_state.small_domain);
-    compute_permutation_lagrange_base_single(polys[1], prover.sigma_2_mapping, prover.circuit_state.small_domain);
-    compute_permutation_lagrange_base_single(polys[2], prover.sigma_3_mapping, prover.circuit_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[0], prover.sigma_1_mapping, prover.fft_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[1], prover.sigma_2_mapping, prover.fft_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[2], prover.sigma_3_mapping, prover.fft_state.small_domain);
 
     for (size_t i = 0; i < 3; ++i)
     {
-        polys[i].ifft(prover.circuit_state.small_domain);
+        polys[i].ifft(prover.fft_state.small_domain);
     }
 
     barretenberg::scalar_multiplication::multiplication_state mul_state[3]{
@@ -50,7 +50,7 @@ inline Verifier preprocess(const Prover& prover)
     for (size_t i = 0; i < prover.widgets.size(); ++i)
     {
         verifier.verifier_widgets.emplace_back(prover.widgets[i]->compute_preprocessed_commitments(
-            prover.circuit_state.small_domain, prover.reference_string));
+            prover.fft_state.small_domain, prover.reference_string));
     }
     return verifier;
 }

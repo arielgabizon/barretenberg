@@ -32,7 +32,7 @@ public:
     ProverMiMCWidget& operator=(const ProverMiMCWidget &other);
     ProverMiMCWidget& operator=(ProverMiMCWidget &&other);
 
-    barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t& alpha_step, CircuitFFTState& circuit_state);
+    barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t& alpha_step, CircuitFFTState& fft_state);
     barretenberg::fr::field_t compute_linear_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t &, const waffle::plonk_proof &proof, const barretenberg::evaluation_domain& domain, barretenberg::polynomial &r);
     barretenberg::fr::field_t compute_opening_poly_contribution(barretenberg::fr::field_t* poly, const barretenberg::evaluation_domain &domain, const barretenberg::fr::field_t &nu_base, const barretenberg::fr::field_t &nu_step);
 

@@ -88,25 +88,25 @@ TEST(preprocess, preprocess)
     state.sigma_3.resize(n);
 
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_1, state.sigma_1_mapping, state.circuit_state.small_domain);
+        state.sigma_1, state.sigma_1_mapping, state.fft_state.small_domain);
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_2, state.sigma_2_mapping, state.circuit_state.small_domain);
+        state.sigma_2, state.sigma_2_mapping, state.fft_state.small_domain);
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_3, state.sigma_3_mapping, state.circuit_state.small_domain);
+        state.sigma_3, state.sigma_3_mapping, state.fft_state.small_domain);
 
-    state.w_l.ifft(state.circuit_state.small_domain);
-    state.w_r.ifft(state.circuit_state.small_domain);
-    state.w_o.ifft(state.circuit_state.small_domain);
+    state.w_l.ifft(state.fft_state.small_domain);
+    state.w_r.ifft(state.fft_state.small_domain);
+    state.w_o.ifft(state.fft_state.small_domain);
 
-    q_m->ifft(state.circuit_state.small_domain);
-    q_l->ifft(state.circuit_state.small_domain);
-    q_r->ifft(state.circuit_state.small_domain);
-    q_o->ifft(state.circuit_state.small_domain);
-    q_c->ifft(state.circuit_state.small_domain);
+    q_m->ifft(state.fft_state.small_domain);
+    q_l->ifft(state.fft_state.small_domain);
+    q_r->ifft(state.fft_state.small_domain);
+    q_o->ifft(state.fft_state.small_domain);
+    q_c->ifft(state.fft_state.small_domain);
 
-    state.sigma_1.ifft(state.circuit_state.small_domain);
-    state.sigma_2.ifft(state.circuit_state.small_domain);
-    state.sigma_3.ifft(state.circuit_state.small_domain);
+    state.sigma_1.ifft(state.fft_state.small_domain);
+    state.sigma_2.ifft(state.fft_state.small_domain);
+    state.sigma_3.ifft(state.fft_state.small_domain);
 
     fr::field_t sigma_1_eval = state.sigma_1.evaluate(x, n);
     fr::field_t sigma_2_eval = state.sigma_2.evaluate(x, n);

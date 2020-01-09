@@ -13,7 +13,7 @@ namespace
 
 using namespace barretenberg;
 
-// void generate_test_data(waffle::Prover& state, waffle::plonk_circuit_state &old_state)
+// void generate_test_data(waffle::Prover& state, waffle::plonk_fft_state &old_state)
 // {
 //     size_t n = state.n;
 //     std::unique_ptr<waffle::ProverArithmeticWidget> widget = std::make_unique<waffle::ProverArithmeticWidget>(n);

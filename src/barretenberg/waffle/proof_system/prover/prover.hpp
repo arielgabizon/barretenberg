@@ -14,12 +14,14 @@
 namespace waffle
 {
 
+template<size_t program_width>
 class Prover
 {
   public:
     Prover(const size_t n = 0);
     Prover(Prover&& other);
     Prover(const Prover& other) = delete;
+    Prover(const CircuitFFTState& fftState);
     Prover& operator=(const Prover& other) = delete;
     Prover& operator=(Prover&& other);
 
@@ -40,28 +42,24 @@ class Prover
 
     size_t n;
 
-    barretenberg::polynomial w_l;
-    barretenberg::polynomial w_r;
-    barretenberg::polynomial w_o;
-    barretenberg::polynomial sigma_1;
-    barretenberg::polynomial sigma_2;
-    barretenberg::polynomial sigma_3;
+
+    std::array<barretenberg::polynomial, program_width> w;
+    std::array<barretenberg::polynomial, program_width> sigma;
     barretenberg::polynomial z;
 
     barretenberg::polynomial r;
 
-    // TODO change to fft_state;
-    waffle::CircuitFFTState circuit_state;
+    waffle::CircuitFFTState fft_state;
 
-    std::vector<uint32_t> sigma_1_mapping;
-    std::vector<uint32_t> sigma_2_mapping;
-    std::vector<uint32_t> sigma_3_mapping;
+    std::array<std::vector<uint32_t>, program_width> sigma_map;
 
     // Hmm, mixing runtime polymorphism and zero-knowledge proof generation. This seems fine...
     std::vector<std::unique_ptr<ProverBaseWidget>> widgets;
-    plonk_challenges challenges;
+    plonk_challenges challenges{};
     plonk_proof proof;
     ReferenceString reference_string;
 };
 
 } // namespace waffle
+
+#include "./prover.tcc"

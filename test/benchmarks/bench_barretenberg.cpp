@@ -28,7 +28,7 @@ using namespace barretenberg;
 constexpr size_t MAX_GATES = 1 << 20;
 constexpr size_t START = (1 << 20) >> 7;
 
-#define CIRCUIT_STATE_SIZE(x) ((x * 17 * sizeof(fr::field_t)) + (x * 3 * sizeof(uint32_t)))
+#define fft_state_SIZE(x) ((x * 17 * sizeof(fr::field_t)) + (x * 3 * sizeof(uint32_t)))
 #define FFT_SIZE(x) (x * 22 * sizeof(fr::field_t))
 
 void generate_random_plonk_circuit(waffle::Prover& state)
@@ -186,7 +186,7 @@ struct global_vars
 
 global_vars globals;
 
-waffle::Prover plonk_circuit_states[8]{
+waffle::Prover plonk_fft_states[8]{
     waffle::Prover(START),      waffle::Prover(START * 2),  waffle::Prover(START * 4),  waffle::Prover(START * 8),
     waffle::Prover(START * 16), waffle::Prover(START * 32), waffle::Prover(START * 64), waffle::Prover(START * 128),
 };
@@ -224,7 +224,7 @@ const auto init = []() {
     {
         size_t n = (MAX_GATES >> 7) << i;
         printf("%lu\n", n);
-        generate_random_plonk_circuit(plonk_circuit_states[i]);
+        generate_random_plonk_circuit(plonk_fft_states[i]);
     }
 
     generate_pairing_points(&globals.g1_pair_points[0], &globals.g2_pair_points[0]);
@@ -605,7 +605,7 @@ void fft_bench_parallel(State& state) noexcept
     for (auto _ : state)
     {
         size_t idx = (size_t)log2(state.range(0) / 4) - (size_t)log2(START);
-        barretenberg::polynomial_arithmetic::fft(globals.data, plonk_circuit_states[idx].circuit_state.large_domain);
+        barretenberg::polynomial_arithmetic::fft(globals.data, plonk_fft_states[idx].fft_state.large_domain);
     }
 }
 BENCHMARK(fft_bench_parallel)->RangeMultiplier(2)->Range(START * 4, MAX_GATES * 4);
@@ -617,8 +617,8 @@ void fft_bench_serial(State& state) noexcept
         size_t idx = (size_t)log2(state.range(0) / 4) - (size_t)log2(START);
         barretenberg::polynomial_arithmetic::fft_inner_serial(
             globals.data,
-            plonk_circuit_states[idx].circuit_state.large_domain.thread_size,
-            plonk_circuit_states[idx].circuit_state.large_domain.get_round_roots());
+            plonk_fft_states[idx].fft_state.large_domain.thread_size,
+            plonk_fft_states[idx].fft_state.large_domain.get_round_roots());
     }
 }
 BENCHMARK(fft_bench_serial)->RangeMultiplier(2)->Range(START * 4, MAX_GATES * 4);
