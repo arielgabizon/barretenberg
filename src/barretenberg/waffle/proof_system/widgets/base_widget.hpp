@@ -11,19 +11,21 @@
 #include "../../waffle_types.hpp"
 
 #include "../circuit_state.hpp"
-
+const int program_width_bound = 4;  // a bit hacky to avoid needing to templatize all the widgets
 namespace waffle
 {
+template <size_t program_width>
 class WidgetVersionControl
 {
   public:
-    enum Dependencies
-    {
-        NONE = 0x0,
-        REQUIRES_W_L_SHIFTED = 0x01,
-        REQUIRES_W_R_SHIFTED = 0x02,
-        REQUIRES_W_O_SHIFTED = 0x04
-    };
+//    enum Dependencies
+//    {
+//        NONE = 0x0,
+//        REQUIRES_W_L_SHIFTED = 0x01,
+//        REQUIRES_W_R_SHIFTED = 0x02,
+//        REQUIRES_W_O_SHIFTED = 0x04
+//    };
+    std::array<bool, program_width_bound> dependencies = { 0 };
     enum Features
     {
         STANDARD = 0x00,
@@ -32,7 +34,7 @@ class WidgetVersionControl
         HAS_MIMC_SELECTORS = 0x04,
         HAS_ECC_SELECTORS = 0x08
     };
-    WidgetVersionControl(const size_t _dependencies, const size_t _features)
+    WidgetVersionControl(const std::array<bool, program_width_bound> _dependencies, const size_t _features)
     {
         dependencies = _dependencies;
         features = _features;
@@ -41,12 +43,11 @@ class WidgetVersionControl
     {
     }
 
-    bool has_dependency(Dependencies required_dependency)
+    bool has_dependency(int i)
     {
-        return ((static_cast<size_t>(dependencies) & static_cast<size_t>(required_dependency)) != 0);
+        return dependencies[i];
     }
 
-    size_t dependencies;
     size_t features;
 };
 

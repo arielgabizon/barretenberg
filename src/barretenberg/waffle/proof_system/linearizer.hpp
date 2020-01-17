@@ -18,7 +18,7 @@ namespace waffle
         barretenberg::fr::field_t q_r;
         barretenberg::fr::field_t q_o;
         barretenberg::fr::field_t q_c;
-        barretenberg::fr::field_t sigma_3;
+        barretenberg::fr::field_t sigma_last;
     };
 
     // This linearisation trick was originated from Mary Maller and the SONIC paper. When computing Kate commitments to the PLONK polynomials, we wish to find the minimum number of polynomial evaluations that the
@@ -73,9 +73,9 @@ namespace waffle
 
         barretenberg::fr::__mul(T1, T0, T0);
         barretenberg::fr::__mul(T0, proof.z_1_shifted_eval, T0);
-        barretenberg::fr::__mul(T0, alpha_pow[0], result.sigma_3);
-        barretenberg::fr::__neg(result.sigma_3, result.sigma_3);
-        barretenberg::fr::__mul(result.sigma_3, challenges.beta, result.sigma_3);
+        barretenberg::fr::__mul(T0, alpha_pow[0], result.sigma_last);
+        barretenberg::fr::__neg(result.sigma_last, result.sigma_last);
+        barretenberg::fr::__mul(result.sigma_last, challenges.beta, result.sigma_last);
 
 
         barretenberg::fr::__mul(l_1, alpha_pow[2], T0);

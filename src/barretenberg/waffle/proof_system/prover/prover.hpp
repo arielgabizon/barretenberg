@@ -14,12 +14,14 @@
 namespace waffle
 {
 
+template<size_t program_width>
 class Prover
 {
   public:
     Prover(const size_t n = 0);
     Prover(Prover&& other);
     Prover(const Prover& other) = delete;
+    Prover(const CircuitFFTState& fftState);
     Prover& operator=(const Prover& other) = delete;
     Prover& operator=(Prover&& other);
 
@@ -32,37 +34,35 @@ class Prover
     void compute_permutation_grand_product_coefficients(barretenberg::polynomial& z_fft);
     void compute_identity_grand_product_coefficients(barretenberg::polynomial& z_fft);
     void compute_arithmetisation_coefficients();
-    void init_quotient_polynomials();
     void compute_quotient_polynomial();
     void compute_opening_elements();
     barretenberg::fr::field_t compute_linearisation_coefficients();
-    plonk_proof construct_proof();
+    plonk_proof<program_width> construct_proof();
     void reset();
 
     size_t n;
 
-    barretenberg::polynomial w_l;
-    barretenberg::polynomial w_r;
-    barretenberg::polynomial w_o;
-    barretenberg::polynomial sigma_1;
-    barretenberg::polynomial sigma_2;
-    barretenberg::polynomial sigma_3;
+
+    std::array<barretenberg::polynomial, program_width> w;
+    std::array<barretenberg::polynomial, program_width> sigma;
     barretenberg::polynomial z;
 
     barretenberg::polynomial r;
 
-    // TODO change to fft_state;
-    waffle::CircuitFFTState circuit_state;
+    waffle::CircuitFFTState<program_width> fft_state;
 
-    std::vector<uint32_t> sigma_1_mapping;
-    std::vector<uint32_t> sigma_2_mapping;
-    std::vector<uint32_t> sigma_3_mapping;
+    std::array<std::vector<uint32_t>, program_width> sigma_mapping;
 
     // Hmm, mixing runtime polymorphism and zero-knowledge proof generation. This seems fine...
     std::vector<std::unique_ptr<ProverBaseWidget>> widgets;
-    plonk_challenges challenges;
-    plonk_proof proof;
+    plonk_challenges challenges{};
+    plonk_proof<program_width> proof;
     ReferenceString reference_string;
+    std::array<bool, program_width> needs_w_shifted = { 0 };
+  private:
+    void update_needs_w_shifted(); //to be run in constructor after all widgets added
 };
 
 } // namespace waffle
+
+#include "./prover.tcc"
