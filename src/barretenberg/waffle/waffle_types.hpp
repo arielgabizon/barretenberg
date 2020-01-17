@@ -6,7 +6,7 @@
 
 namespace waffle
 {
-struct g1_challenges
+struct plonk_challenges
 {
     barretenberg::fr::field_t beta;
     barretenberg::fr::field_t gamma;
@@ -15,11 +15,17 @@ struct g1_challenges
     barretenberg::fr::field_t nu;
 };
 
+void make_z_pow(const barretenberg::fr::field_t z, const size_t length, const uint64_t n, barretenberg::fr::field_t* z_pow)
+{
+    for (size_t i = 0; i < length; ++i) {
+        barretenberg::fr::__pow_small(z, n * (i + 1), z_pow[i]);
+    }
+}
+
 template<size_t program_width>
 struct plonk_proof
 {
 
-    std::map<std::string, std::pair<barretenberg::g1::affine_element, size_t> > g1_commitments;
     // Kate polynomial commitments required for a proof of knowledge
     std::array<barretenberg::g1::affine_element, program_width> W;
 //
@@ -37,7 +43,7 @@ struct plonk_proof
     barretenberg::g1::affine_element PI_Z_OMEGA;
 
 
-    vector<barretenberg::fr::field_t> w;
+    std::array<barretenberg::fr::field_t, program_width> w_eval;
 
 
     std::array<barretenberg::fr::field_t, program_width-1> sigma_eval;

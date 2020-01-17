@@ -38,7 +38,7 @@ inline void add_quotient_commitment_to_buffer(const plonk_proof &proof, uint64_t
     barretenberg::fq::__from_montgomery_form(proof.T_HI.y, *(barretenberg::fq::field_t *)&input_buffer[20]);
 }
 
-inline void add_polynomial_evaluations_to_buffer(const plonk_proof &proof, const barretenberg::fr::field_t& t_eval, uint64_t* input_buffer)
+inline void add_polynomial_evaluations_to_buffer(const plonk_proof<3> &proof, const barretenberg::fr::field_t& t_eval, uint64_t* input_buffer)
 {
     barretenberg::fr::__from_montgomery_form(proof.w_l_eval, *(barretenberg::fr::field_t*)&input_buffer[0]);
     barretenberg::fr::__from_montgomery_form(proof.w_r_eval, *(barretenberg::fr::field_t*)&input_buffer[4]);
@@ -106,7 +106,7 @@ inline barretenberg::fr::field_t compute_evaluation_challenge(const plonk_proof 
     return z;
 }
 
-inline barretenberg::fr::field_t compute_linearisation_challenge(const plonk_proof &proof, const barretenberg::fr::field_t &t_eval)
+inline barretenberg::fr::field_t compute_linearisation_challenge(const plonk_proof<size_t program_width> &proof, const barretenberg::fr::field_t &t_eval)
 {
     barretenberg::fr::field_t nu;
     uint64_t input_buffer[22 * 4];

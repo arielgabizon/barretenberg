@@ -9,6 +9,7 @@
 
 namespace waffle
 {
+template<size_t program_width>
 class Verifier
 {
   public:
@@ -18,14 +19,13 @@ class Verifier
     Verifier& operator=(const Verifier& other) = delete;
     Verifier& operator=(Verifier&& other);
 
-    bool verify_proof(const plonk_proof& proof);
+    bool verify_proof(const plonk_proof<program_width>& proof);
 
     ReferenceString reference_string;
-
-    barretenberg::g1::affine_element SIGMA_1;
-    barretenberg::g1::affine_element SIGMA_2;
-    barretenberg::g1::affine_element SIGMA_3;
+    std::array<barretenberg::g1::affine_element, program_width> SIGMA;
     std::vector<std::unique_ptr<VerifierBaseWidget>> verifier_widgets;
+    std::array<bool, program_width> needs_w_shifted = { 0 };
     size_t n;
+    void update_needs_w_shifted();
 };
 } // namespace waffle

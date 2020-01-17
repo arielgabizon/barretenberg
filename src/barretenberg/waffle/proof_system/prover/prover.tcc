@@ -60,7 +60,8 @@ Prover<program_width>& Prover<program_width>::operator=(Prover<program_width> &&
         widgets.emplace_back(std::move(other.widgets[i]));
     }
     reference_string = std::move(other.reference_string);
-    return *this;
+    update_needs_w_shifted();
+   return *this;
 }
 
 template<size_t program_width>
@@ -552,10 +553,8 @@ void Prover<program_width>::compute_opening_elements()
     // The poly opened at z.omega is the permutation argument polynomial Z
     polynomial opening_poly(n, n);
     polynomial shifted_opening_poly(n, n);
-    fr::field_t z_pow_n;
-    fr::field_t z_pow_2_n;
-    fr::__pow_small(challenges.z, n, z_pow_n);
-    fr::__pow_small(challenges.z, 2 * n, z_pow_2_n);
+    std::array<fr::field_t, program_width-1> z_pow;
+    make_z_pow(challenges.z, program_width-1, n, z_pow);
 
     ITERATE_OVER_DOMAIN_START(fft_state.small_domain);
         fr::field_t T;
@@ -570,9 +569,11 @@ void Prover<program_width>::compute_opening_elements()
         fr::field_t acc;
 
         // contributions from the quotient polynomial (first contribution added in end)
-        fr::__mul(fft_state.quotient_large[i+n], z_pow_n, acc);
-        fr::__mul(fft_state.quotient_large[i+n+n], z_pow_2_n, T);
-        fr::__add(acc, T, acc);
+        fr::__mul(fft_state.quotient_large[i+n], z_pow[0], acc);
+        for (size_t k = 2; k < program_width; ++k) {
+            fr::__mul(fft_state.quotient_large[i + k*n], z_pow[k-1], T);
+            fr::__add(acc, T, acc);
+        }
         fr::__mul(r[i], nu_powers[0], T);
         for (int k = 0; k < program_width; ++k) {
             fr::__mul(w[k][i], nu_powers[k+1], W[k]);

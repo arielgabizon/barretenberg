@@ -64,7 +64,7 @@ add_library(
     waffle/proof_system/widgets/sequential_widget.hpp
     waffle/proof_system/prover/prover.cpp
     waffle/proof_system/prover/prover.hpp
-    waffle/proof_system/verifier/verifier.cpp
+        waffle/proof_system/verifier/verifier.tcc
     waffle/proof_system/verifier/verifier.hpp
     waffle/composer/composer_base.hpp
     waffle/composer/standard_composer.cpp
@@ -177,7 +177,7 @@ if(PROFILING)
         waffle/proof_system/widgets/sequential_widget.hpp
         waffle/proof_system/prover/prover.cpp
         waffle/proof_system/prover/prover.hpp
-        waffle/proof_system/verifier/verifier.cpp
+            waffle/proof_system/verifier/verifier.tcc
         waffle/proof_system/verifier/verifier.hpp
         waffle/composer/composer_base.hpp
         waffle/composer/standard_composer.cpp
