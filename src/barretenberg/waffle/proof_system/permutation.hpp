@@ -12,7 +12,8 @@ namespace waffle
 {
 inline void compute_permutation_lagrange_base_single(barretenberg::polynomial& output,
                                                      const std::vector<uint32_t>& permutation,
-                                                     const barretenberg::evaluation_domain& small_domain)
+                                                     const barretenberg::evaluation_domain& small_domain,
+                                                     const field_t* k)
 {
     if (output.get_size() < permutation.size())
     {
@@ -69,20 +70,25 @@ inline void compute_permutation_lagrange_base_single(barretenberg::polynomial& o
     // isolate the highest 2 bits of `permutation[i]` and shunt them down into the 2 least significant bits
     switch ((permutation[i] >> 30U) & 0x3U)
     {
-    case 2U: // output wire - multiply by 2nd quadratic nonresidue
-    {
-        barretenberg::fr::__mul(output.at(i), k2, output.at(i));
-        break;
-    }
-    case 1U: // right wire - multiply by 1st quadratic nonresidue
-    {
-        barretenberg::fr::__mul(output.at(i), k1, output.at(i));
-        break;
-    }
-    default: // left wire - do nothing
-    {
-        break;
-    }
+        case 3U: // output wire - multiply by 2nd quadratic nonresidue
+        {
+            barretenberg::fr::__mul(output.at(i), k[2], output.at(i));
+            break;
+        }
+        case 2U: // output wire - multiply by 2nd quadratic nonresidue
+        {
+            barretenberg::fr::__mul(output.at(i), k[1], output.at(i));
+            break;
+        }
+        case 1U: // right wire - multiply by 1st quadratic nonresidue
+        {
+            barretenberg::fr::__mul(output.at(i), k[0], output.at(i));
+            break;
+        }
+        default: // left wire - do nothing
+        {
+            break;
+        }
     }
     ITERATE_OVER_DOMAIN_END;
 }

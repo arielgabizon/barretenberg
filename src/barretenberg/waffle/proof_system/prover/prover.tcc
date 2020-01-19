@@ -26,6 +26,7 @@ n(__n),
 fft_state(n),
 reference_string(n)
 {
+    fr::compute_coset_generators(program_width-1, 1 << 30, k);
 }
 
 template<size_t program_width>
@@ -45,6 +46,7 @@ sigma(std::move(other.sigma))
     }
     reference_string = std::move(other.reference_string);
     update_needs_w_shifted();
+    fr::compute_coset_generators(program_width-1, 1 << 30, k);
 }
 
 template<size_t program_width>
@@ -61,7 +63,8 @@ Prover<program_width>& Prover<program_width>::operator=(Prover<program_width> &&
     }
     reference_string = std::move(other.reference_string);
     update_needs_w_shifted();
-   return *this;
+    k=other.k;
+    return *this;
 }
 
 template<size_t program_width>
@@ -164,8 +167,6 @@ void Prover<program_width>::compute_z_coefficients()
         fr::field_t thread_root;
         fr::__pow_small(fft_state.small_domain.root, j * fft_state.small_domain.thread_size, thread_root);
         fr::__mul(thread_root, challenges.beta, work_root);
-        std::array<fr::field_t, program_width-1> k;
-        fr::compute_coset_generators(program_width-1, 1 << 30, k);
 //        fr::field_t k1 = fr::multiplicative_generator;
 //        fr::field_t k2 = fr::alternate_multiplicative_generator;
 
@@ -314,8 +315,6 @@ void Prover<program_width>::compute_identity_grand_product_coefficients(polynomi
 {
 //    fr::field_t right_shift = fr::multiplicative_generator;
 //    fr::field_t output_shift = fr::alternate_multiplicative_generator;
-    std::array<fr::field_t, program_width-1> k;
-    fr::compute_coset_generators(program_width-1, 1 << 30, k);
 
 #ifndef NO_MULTITHREADING
     #pragma omp parallel for
@@ -427,7 +426,7 @@ void Prover<program_width>::compute_quotient_polynomial()
 
     compute_z_commitment();
 
-    for (int i = 0; i < ; ++i) {
+    for (int i = 0; i < program_width; ++i) {
         fft_state.w_fft[i] = polynomial(w[i], 4 * n + 4);
         fft_state.w_fft[i].coset_fft(fft_state.large_domain);
         fft_state.w_fft[i].add_lagrange_base_coefficient(fft_state.w_fft[i][0]);

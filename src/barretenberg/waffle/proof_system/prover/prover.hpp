@@ -51,6 +51,7 @@ class Prover
 
     waffle::CircuitFFTState<program_width> fft_state;
 
+    std::array<fr::field_t, program_width-1> k;
     std::array<std::vector<uint32_t>, program_width> sigma_mapping;
 
     // Hmm, mixing runtime polymorphism and zero-knowledge proof generation. This seems fine...
