@@ -59,7 +59,7 @@ int main()
     printf("generating witnesses\n");
     waffle::StandardComposer composer = waffle::StandardComposer(NUM_GATES);
     generate_test_plonk_circuit(composer, NUM_GATES);
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     printf("constructing proof\n");

@@ -425,22 +425,22 @@ void ExtendedComposer::combine_linear_relations()
     adjusted_n = n - static_cast<size_t>(delete_count);
 }
 
-void ExtendedComposer::compute_sigma_permutations(Prover& output_state)
+void ExtendedComposer::compute_sigma_permutations(Prover<3>& output_state)
 {
     // create basic 'identity' permutation
-    output_state.sigma_1_mapping.reserve(output_state.n);
-    output_state.sigma_2_mapping.reserve(output_state.n);
-    output_state.sigma_3_mapping.reserve(output_state.n);
+    output_state.sigma_map[0].reserve(output_state.n);
+    output_state.sigma_map[1].reserve(output_state.n);
+    output_state.sigma_map[2].reserve(output_state.n);
     for (size_t i = 0; i < output_state.n; ++i)
     {
-        output_state.sigma_1_mapping.emplace_back(static_cast<uint32_t>(i));
-        output_state.sigma_2_mapping.emplace_back(static_cast<uint32_t>(i) + (1U << 30U));
-        output_state.sigma_3_mapping.emplace_back(static_cast<uint32_t>(i) + (1U << 31U));
+        output_state.sigma_map[0].emplace_back(static_cast<uint32_t>(i));
+        output_state.sigma_map[1].emplace_back(static_cast<uint32_t>(i) + (1U << 30U));
+        output_state.sigma_map[2].emplace_back(static_cast<uint32_t>(i) + (1U << 31U));
     }
 
-    uint32_t* sigmas[3]{ &output_state.sigma_1_mapping[0],
-                         &output_state.sigma_2_mapping[0],
-                         &output_state.sigma_3_mapping[0] };
+    uint32_t* sigmas[3]{ &output_state.sigma_map[0][0],
+                         &output_state.sigma_map[1][0],
+                         &output_state.sigma_map[2][0] };
 
     for (size_t i = 0; i < wire_epicycles.size(); ++i)
     {
@@ -461,7 +461,7 @@ void ExtendedComposer::compute_sigma_permutations(Prover& output_state)
     }
 }
 
-Prover ExtendedComposer::preprocess()
+Prover<3> ExtendedComposer::preprocess()
 {
     combine_linear_relations();
 
@@ -505,7 +505,7 @@ Prover ExtendedComposer::preprocess()
         adjusted_gate_indices.push_back(static_cast<uint32_t>(i));
     }
 
-    Prover output_state(new_n);
+    Prover<3> output_state(new_n);
 
     compute_sigma_permutations(output_state);
 
@@ -513,9 +513,9 @@ Prover ExtendedComposer::preprocess()
     std::unique_ptr<ProverArithmeticWidget> arithmetic_widget = std::make_unique<ProverArithmeticWidget>(new_n);
     std::unique_ptr<ProverSequentialWidget> sequential_widget = std::make_unique<ProverSequentialWidget>(new_n);
 
-    output_state.w_l = polynomial(new_n);
-    output_state.w_r = polynomial(new_n);
-    output_state.w_o = polynomial(new_n);
+    output_state.w[0] = polynomial(new_n);
+    output_state.w[1] = polynomial(new_n);
+    output_state.w[2] = polynomial(new_n);
 
     for (size_t i = 0; i < n + n_delta; ++i)
     {
@@ -524,9 +524,9 @@ Prover ExtendedComposer::preprocess()
             continue;
         }
         size_t index = adjusted_gate_indices[i];
-        fr::__copy(variables[w_l[i]], output_state.w_l[index]);
-        fr::__copy(variables[w_r[i]], output_state.w_r[index]);
-        fr::__copy(variables[w_o[i]], output_state.w_o[index]);
+        fr::__copy(variables[w_l[i]], output_state.w[0][index]);
+        fr::__copy(variables[w_r[i]], output_state.w[1][index]);
+        fr::__copy(variables[w_o[i]], output_state.w[2][index]);
         fr::__copy(q_m[i], arithmetic_widget->q_m[index]);
         fr::__copy(q_l[i], arithmetic_widget->q_l[index]);
         fr::__copy(q_r[i], arithmetic_widget->q_r[index]);
@@ -543,46 +543,46 @@ Prover ExtendedComposer::preprocess()
     // {
     //     uint32_t mask = (1 << 28) - 1;
 
-    //     fr::field_t left_copy; //= output_state.w_l[output_state.sigma_1_mapping[i]];
-    //     fr::field_t right_copy;// = output_state.w_r[output_state.sigma_2_mapping[i]];
-    //     fr::field_t output_copy;// = output_state.w_o[output_state.sigma_3_mapping[i]];
-    //     if (output_state.sigma_1_mapping[i] >> 30 == 0)
+    //     fr::field_t left_copy; //= output_state.w[0][output_state.sigma_map[0][i]];
+    //     fr::field_t right_copy;// = output_state.w[1][output_state.sigma_map[1][i]];
+    //     fr::field_t output_copy;// = output_state.w[2][output_state.sigma_map[2][i]];
+    //     if (output_state.sigma_map[0][i] >> 30 == 0)
     //     {
-    //         left_copy = output_state.w_l[output_state.sigma_1_mapping[i] & mask];
+    //         left_copy = output_state.w[0][output_state.sigma_map[0][i] & mask];
     //     }
-    //     else if (output_state.sigma_1_mapping[i] >> 30 == 1)
+    //     else if (output_state.sigma_map[0][i] >> 30 == 1)
     //     {
-    //         left_copy = output_state.w_r[output_state.sigma_1_mapping[i] & mask];
-    //     }
-    //     else
-    //     {
-    //         left_copy = output_state.w_o[output_state.sigma_1_mapping[i] & mask];
-    //     }
-    //     if (output_state.sigma_2_mapping[i] >> 30 == 0)
-    //     {
-    //         right_copy = output_state.w_l[output_state.sigma_2_mapping[i] & mask];
-    //     }
-    //     else if (output_state.sigma_2_mapping[i] >> 30 == 1)
-    //     {
-    //         right_copy = output_state.w_r[output_state.sigma_2_mapping[i] & mask];
+    //         left_copy = output_state.w[1][output_state.sigma_map[0][i] & mask];
     //     }
     //     else
     //     {
-    //         right_copy = output_state.w_o[output_state.sigma_2_mapping[i] & mask];
+    //         left_copy = output_state.w[2][output_state.sigma_map[0][i] & mask];
     //     }
-    //     if (output_state.sigma_3_mapping[i] >> 30 == 0)
+    //     if (output_state.sigma_map[1][i] >> 30 == 0)
     //     {
-    //         output_copy = output_state.w_l[output_state.sigma_3_mapping[i] & mask];
+    //         right_copy = output_state.w[0][output_state.sigma_map[1][i] & mask];
     //     }
-    //     else if (output_state.sigma_3_mapping[i] >> 30 == 1)
+    //     else if (output_state.sigma_map[1][i] >> 30 == 1)
     //     {
-    //         output_copy = output_state.w_r[output_state.sigma_3_mapping[i] & mask];
+    //         right_copy = output_state.w[1][output_state.sigma_map[1][i] & mask];
     //     }
     //     else
     //     {
-    //         output_copy = output_state.w_o[output_state.sigma_3_mapping[i] & mask];
+    //         right_copy = output_state.w[2][output_state.sigma_map[1][i] & mask];
     //     }
-    //     if (!fr::eq(left_copy, output_state.w_l[i]))
+    //     if (output_state.sigma_map[2][i] >> 30 == 0)
+    //     {
+    //         output_copy = output_state.w[0][output_state.sigma_map[2][i] & mask];
+    //     }
+    //     else if (output_state.sigma_map[2][i] >> 30 == 1)
+    //     {
+    //         output_copy = output_state.w[1][output_state.sigma_map[2][i] & mask];
+    //     }
+    //     else
+    //     {
+    //         output_copy = output_state.w[2][output_state.sigma_map[2][i] & mask];
+    //     }
+    //     if (!fr::eq(left_copy, output_state.w[0][i]))
     //     {
     //         printf("left copy at index %lu fails... \n", i);
     //         for (size_t j = 0; j < adjusted_gate_indices.size(); ++j)
@@ -594,11 +594,11 @@ Prover ExtendedComposer::preprocess()
     //             }
     //         }
     //     }
-    //     if (!fr::eq(right_copy, output_state.w_r[i]))
+    //     if (!fr::eq(right_copy, output_state.w[1][i]))
     //     {
     //         printf("right copy at index %lu fails. mapped to gate %lu. right wire and copy wire = \n", i,
-    //         output_state.sigma_2_mapping[i] & mask); printf("raw value = %x \n", output_state.sigma_2_mapping[i]);
-    //         fr::print(fr::from_montgomery_form(output_state.w_r[i]));
+    //         output_state.sigma_map[1][i] & mask); printf("raw value = %x \n", output_state.sigma_map[1][i]);
+    //         fr::print(fr::from_montgomery_form(output_state.w[1][i]));
     //         fr::print(fr::from_montgomery_form(right_copy));
     //         for (size_t j = 0; j < adjusted_gate_indices.size(); ++j)
     //         {
@@ -609,11 +609,11 @@ Prover ExtendedComposer::preprocess()
     //             }
     //         }
     //     }
-    //     if (!fr::eq(output_copy, output_state.w_o[i]))
+    //     if (!fr::eq(output_copy, output_state.w[2][i]))
     //     {
     //         printf("output copy at index %lu fails. mapped to gate %lu. output wire and copy wire = \n", i,
-    //         output_state.sigma_3_mapping[i] & mask); printf("raw value = %x \n", output_state.sigma_3_mapping[i]);
-    //         fr::print(fr::from_montgomery_form(output_state.w_o[i]));
+    //         output_state.sigma_map[2][i] & mask); printf("raw value = %x \n", output_state.sigma_map[2][i]);
+    //         fr::print(fr::from_montgomery_form(output_state.w[2][i]));
     //         fr::print(fr::from_montgomery_form(output_copy));
     //         for (size_t j = 0; j < adjusted_gate_indices.size(); ++j)
     //         {
@@ -627,13 +627,13 @@ Prover ExtendedComposer::preprocess()
     // }
     // for (size_t i = 0; i < output_state.n; ++i)
     // {
-    //     fr::field_t wlwr = fr::mul(output_state.w_l[i], output_state.w_r[i]);
+    //     fr::field_t wlwr = fr::mul(output_state.w[0][i], output_state.w[1][i]);
     //     fr::field_t t0 = fr::mul(wlwr, arithmetic_widget->q_m[i]);
-    //     fr::field_t t1 = fr::mul(output_state.w_l[i], arithmetic_widget->q_l[i]);
-    //     fr::field_t t2 = fr::mul(output_state.w_r[i], arithmetic_widget->q_r[i]);
-    //     fr::field_t t3 = fr::mul(output_state.w_o[i], arithmetic_widget->q_o[i]);
+    //     fr::field_t t1 = fr::mul(output_state.w[0][i], arithmetic_widget->q_l[i]);
+    //     fr::field_t t2 = fr::mul(output_state.w[1][i], arithmetic_widget->q_r[i]);
+    //     fr::field_t t3 = fr::mul(output_state.w[2][i], arithmetic_widget->q_o[i]);
     //     size_t shifted_idx = (i == output_state.n - 1) ? 0 : i + 1;
-    //     fr::field_t t4 = fr::mul(output_state.w_o[shifted_idx], sequential_widget->q_o_next[i]);
+    //     fr::field_t t4 = fr::mul(output_state.w[2][shifted_idx], sequential_widget->q_o_next[i]);
     //     fr::field_t result = fr::add(t0, t1);
     //     result = fr::add(result, t2);
     //     result = fr::add(result, t3);
@@ -664,10 +664,10 @@ Prover ExtendedComposer::preprocess()
     //         fr::print(fr::from_montgomery_form(arithmetic_widget->q_m[i]));
     //         fr::print(fr::from_montgomery_form(sequential_widget->q_o_next[i]));
     //         printf("witnesses: \n");
-    //         fr::print(fr::from_montgomery_form(output_state.w_l[i]));
-    //         fr::print(fr::from_montgomery_form(output_state.w_r[i]));
-    //         fr::print(fr::from_montgomery_form(output_state.w_o[i]));
-    //         fr::print(fr::from_montgomery_form(output_state.w_o[shifted_idx]));
+    //         fr::print(fr::from_montgomery_form(output_state.w[0][i]));
+    //         fr::print(fr::from_montgomery_form(output_state.w[1][i]));
+    //         fr::print(fr::from_montgomery_form(output_state.w[2][i]));
+    //         fr::print(fr::from_montgomery_form(output_state.w[2][shifted_idx]));
     //     }
     // }
     // printf("bool wires...\n");
@@ -675,7 +675,7 @@ Prover ExtendedComposer::preprocess()
     // {
     //     if (!fr::eq(fr::from_montgomery_form(bool_widget->q_bl[i]), fr::zero))
     //     {
-    //         fr::field_t t = output_state.w_l[i];
+    //         fr::field_t t = output_state.w[0][i];
     //         fr::field_t u = fr::sub(fr::sqr(t), t);
     //         if (!fr::eq(u, fr::zero))
     //         {
@@ -684,7 +684,7 @@ Prover ExtendedComposer::preprocess()
     //     }
     //     if (!fr::eq(fr::from_montgomery_form(bool_widget->q_br[i]), fr::zero))
     //     {
-    //         fr::field_t t = output_state.w_r[i];
+    //         fr::field_t t = output_state.w[1][i];
     //         fr::field_t u = fr::sub(fr::sqr(t), t);
     //         if (!fr::eq(u, fr::zero))
     //         {

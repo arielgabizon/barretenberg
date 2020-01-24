@@ -13,7 +13,7 @@
 
 namespace waffle
 {
-inline Verifier preprocess(const Prover& prover)
+inline Verifier preprocess(const Prover<3>& prover)
 {
     barretenberg::polynomial polys[3]{
         barretenberg::polynomial(prover.n, prover.n),
@@ -22,9 +22,9 @@ inline Verifier preprocess(const Prover& prover)
     };
 
     // copy polynomials so that we don't mutate inputs
-    compute_permutation_lagrange_base_single(polys[0], prover.sigma_1_mapping, prover.fft_state.small_domain);
-    compute_permutation_lagrange_base_single(polys[1], prover.sigma_2_mapping, prover.fft_state.small_domain);
-    compute_permutation_lagrange_base_single(polys[2], prover.sigma_3_mapping, prover.fft_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[0], prover.sigma_map[0], prover.fft_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[1], prover.sigma_map[1], prover.fft_state.small_domain);
+    compute_permutation_lagrange_base_single(polys[2], prover.sigma_map[2], prover.fft_state.small_domain);
 
     for (size_t i = 0; i < 3; ++i)
     {

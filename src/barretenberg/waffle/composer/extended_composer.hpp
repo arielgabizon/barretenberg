@@ -68,8 +68,8 @@ class ExtendedComposer : public BoolComposer
                                                    const size_t gate_index);
     extended_wire_properties get_shared_wire(const size_t i);
     void combine_linear_relations();
-    void compute_sigma_permutations(Prover& output_state) override;
-    Prover preprocess() override;
+    void compute_sigma_permutations(Prover<3>& output_state) override;
+    Prover<3> preprocess() override;
 
     uint32_t add_variable(const barretenberg::fr::field_t& in) override
     {

@@ -5,14 +5,14 @@
 #include <cstdlib>
 
 // TODO: WARNING! getentropy is using rand()! Should probably be called dontgetentropy()!
-inline int getentropy(void* buf, size_t size)
-{
-    for (size_t i = 0; i < size; ++i)
-    {
-        ((char*)buf)[i] = (char)rand();
-    }
-    return 0;
-}
+// inline int getentropy(void* buf, size_t size)
+// {
+//     for (size_t i = 0; i < size; ++i)
+//     {
+//         ((char*)buf)[i] = (char)rand();
+//     }
+//     return 0;
+// }
 
 #ifdef _WIN32
 #define PRIx64 "llx"

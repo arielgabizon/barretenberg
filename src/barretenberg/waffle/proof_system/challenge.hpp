@@ -14,35 +14,35 @@ namespace waffle
 
 inline void add_wire_commitments_to_buffer(const plonk_proof &proof, uint64_t* input_buffer)
 {
-    barretenberg::fq::__from_montgomery_form(proof.W_L.x, *(barretenberg::fq::field_t *)&input_buffer[0]);
-    barretenberg::fq::__from_montgomery_form(proof.W_L.y, *(barretenberg::fq::field_t *)&input_buffer[4]);
-    barretenberg::fq::__from_montgomery_form(proof.W_R.x, *(barretenberg::fq::field_t *)&input_buffer[8]);
-    barretenberg::fq::__from_montgomery_form(proof.W_R.y, *(barretenberg::fq::field_t *)&input_buffer[12]);
-    barretenberg::fq::__from_montgomery_form(proof.W_O.x, *(barretenberg::fq::field_t *)&input_buffer[16]);
-    barretenberg::fq::__from_montgomery_form(proof.W_O.y, *(barretenberg::fq::field_t *)&input_buffer[20]);
+    barretenberg::fq::__from_montgomery_form(proof.W[0].x, *(barretenberg::fq::field_t *)&input_buffer[0]);
+    barretenberg::fq::__from_montgomery_form(proof.W[0].y, *(barretenberg::fq::field_t *)&input_buffer[4]);
+    barretenberg::fq::__from_montgomery_form(proof.W[1].x, *(barretenberg::fq::field_t *)&input_buffer[8]);
+    barretenberg::fq::__from_montgomery_form(proof.W[1].y, *(barretenberg::fq::field_t *)&input_buffer[12]);
+    barretenberg::fq::__from_montgomery_form(proof.W[2].x, *(barretenberg::fq::field_t *)&input_buffer[16]);
+    barretenberg::fq::__from_montgomery_form(proof.W[2].y, *(barretenberg::fq::field_t *)&input_buffer[20]);
 }
 
 inline void add_grand_product_commitments_to_buffer(const plonk_proof &proof, uint64_t* input_buffer)
 {
-    barretenberg::fq::__from_montgomery_form(proof.Z_1.x, *(barretenberg::fq::field_t *)&input_buffer[0]);
-    barretenberg::fq::__from_montgomery_form(proof.Z_1.y, *(barretenberg::fq::field_t *)&input_buffer[4]);
+    barretenberg::fq::__from_montgomery_form(proof.Z.x, *(barretenberg::fq::field_t *)&input_buffer[0]);
+    barretenberg::fq::__from_montgomery_form(proof.Z.y, *(barretenberg::fq::field_t *)&input_buffer[4]);
 }
 
 inline void add_quotient_commitment_to_buffer(const plonk_proof &proof, uint64_t* input_buffer)
 {
-    barretenberg::fq::__from_montgomery_form(proof.T_LO.x, *(barretenberg::fq::field_t *)&input_buffer[0]);
-    barretenberg::fq::__from_montgomery_form(proof.T_LO.y, *(barretenberg::fq::field_t *)&input_buffer[4]);
-    barretenberg::fq::__from_montgomery_form(proof.T_MID.x, *(barretenberg::fq::field_t *)&input_buffer[8]);
-    barretenberg::fq::__from_montgomery_form(proof.T_MID.y, *(barretenberg::fq::field_t *)&input_buffer[12]);
-    barretenberg::fq::__from_montgomery_form(proof.T_HI.x, *(barretenberg::fq::field_t *)&input_buffer[16]);
-    barretenberg::fq::__from_montgomery_form(proof.T_HI.y, *(barretenberg::fq::field_t *)&input_buffer[20]);
+    barretenberg::fq::__from_montgomery_form(proof.T[0].x, *(barretenberg::fq::field_t *)&input_buffer[0]);
+    barretenberg::fq::__from_montgomery_form(proof.T[0].y, *(barretenberg::fq::field_t *)&input_buffer[4]);
+    barretenberg::fq::__from_montgomery_form(proof.T[1].x, *(barretenberg::fq::field_t *)&input_buffer[8]);
+    barretenberg::fq::__from_montgomery_form(proof.T[1].y, *(barretenberg::fq::field_t *)&input_buffer[12]);
+    barretenberg::fq::__from_montgomery_form(proof.T[2].x, *(barretenberg::fq::field_t *)&input_buffer[16]);
+    barretenberg::fq::__from_montgomery_form(proof.T[2].y, *(barretenberg::fq::field_t *)&input_buffer[20]);
 }
 
 inline void add_polynomial_evaluations_to_buffer(const plonk_proof &proof, const barretenberg::fr::field_t& t_eval, uint64_t* input_buffer)
 {
-    barretenberg::fr::__from_montgomery_form(proof.w_l_eval, *(barretenberg::fr::field_t*)&input_buffer[0]);
-    barretenberg::fr::__from_montgomery_form(proof.w_r_eval, *(barretenberg::fr::field_t*)&input_buffer[4]);
-    barretenberg::fr::__from_montgomery_form(proof.w_o_eval, *(barretenberg::fr::field_t*)&input_buffer[8]);
+    barretenberg::fr::__from_montgomery_form(proof.w_eval[0], *(barretenberg::fr::field_t*)&input_buffer[0]);
+    barretenberg::fr::__from_montgomery_form(proof.w_eval[1], *(barretenberg::fr::field_t*)&input_buffer[4]);
+    barretenberg::fr::__from_montgomery_form(proof.w_eval[2], *(barretenberg::fr::field_t*)&input_buffer[8]);
     barretenberg::fr::__from_montgomery_form(proof.sigma_1_eval, *(barretenberg::fr::field_t*)&input_buffer[12]);
     barretenberg::fr::__from_montgomery_form(proof.sigma_2_eval, *(barretenberg::fr::field_t*)&input_buffer[16]);
     barretenberg::fr::__from_montgomery_form(proof.z_1_shifted_eval, *(barretenberg::fr::field_t*)&input_buffer[20]);

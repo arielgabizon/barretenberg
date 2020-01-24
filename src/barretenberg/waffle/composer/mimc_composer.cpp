@@ -169,7 +169,7 @@ namespace waffle
         ++n;
     }
 
-    Prover MiMCComposer::preprocess()
+    Prover<3> MiMCComposer::preprocess()
     {
         ASSERT(wire_epicycles.size() == variables.size());
         ASSERT(n == q_m.size());
@@ -218,22 +218,22 @@ namespace waffle
             w_r.emplace_back(zero_idx);
             w_o.emplace_back(zero_idx);
         }
-        Prover output_state(new_n);
+        Prover<3> output_state(new_n);
     
         compute_sigma_permutations(output_state);
     
         std::unique_ptr<ProverMiMCWidget> mimc_widget = std::make_unique<ProverMiMCWidget>(new_n);
         std::unique_ptr<ProverArithmeticWidget> arithmetic_widget = std::make_unique<ProverArithmeticWidget>(new_n);
 
-        output_state.w_l = polynomial(new_n);
-        output_state.w_r = polynomial(new_n);
-        output_state.w_o = polynomial(new_n);
+        output_state.w[0] = polynomial(new_n);
+        output_state.w[1] = polynomial(new_n);
+        output_state.w[2] = polynomial(new_n);
  
         for (size_t i = 0; i < new_n; ++i)
         {
-            fr::__copy(variables[w_l[i]], output_state.w_l[i]);
-            fr::__copy(variables[w_r[i]], output_state.w_r[i]);
-            fr::__copy(variables[w_o[i]], output_state.w_o[i]);
+            fr::__copy(variables[w_l[i]], output_state.w[0][i]);
+            fr::__copy(variables[w_r[i]], output_state.w[1][i]);
+            fr::__copy(variables[w_o[i]], output_state.w[2][i]);
 
             fr::__copy(q_m[i], arithmetic_widget->q_m[i]);
             fr::__copy(q_l[i], arithmetic_widget->q_l[i]);

@@ -39,14 +39,14 @@ TEST(preprocess, preprocess)
 {
     size_t n = 256;
 
-    waffle::Prover state(n);
+    waffle::Prover<3> state(n);
     std::unique_ptr<waffle::ProverArithmeticWidget> widget = std::make_unique<waffle::ProverArithmeticWidget>(n);
-    state.sigma_1_mapping.resize(n);
-    state.sigma_2_mapping.resize(n);
-    state.sigma_3_mapping.resize(n);
-    state.w_l.resize(n);
-    state.w_r.resize(n);
-    state.w_o.resize(n);
+    state.sigma_map[0].resize(n);
+    state.sigma_map[1].resize(n);
+    state.sigma_map[2].resize(n);
+    state.w[0].resize(n);
+    state.w[1].resize(n);
+    state.w[2].resize(n);
 
     barretenberg::polynomial* q_m = &widget->q_m;
     barretenberg::polynomial* q_l = &widget->q_l;
@@ -56,9 +56,9 @@ TEST(preprocess, preprocess)
 
     for (size_t i = 0; i < n; ++i)
     {
-        state.w_l.at(i) = fr::random_element();
-        state.w_r.at(i) = fr::random_element();
-        state.w_o.at(i) = fr::random_element();
+        state.w[0].at(i) = fr::random_element();
+        state.w[1].at(i) = fr::random_element();
+        state.w[2].at(i) = fr::random_element();
         widget->q_m.at(i) = fr::random_element();
         widget->q_l.at(i) = fr::random_element();
         widget->q_r.at(i) = fr::random_element();
@@ -68,9 +68,9 @@ TEST(preprocess, preprocess)
 
     for (size_t i = 0; i < n; ++i)
     {
-        state.sigma_3_mapping[i] = (uint32_t)((n - 1 - i) + ((0) << 30U));
-        state.sigma_2_mapping[i] = (uint32_t)((n - 1 - i) + ((1U) << 30U));
-        state.sigma_1_mapping[i] = (uint32_t)((n - 1 - i) + ((1U) << 31U));
+        state.sigma_map[2][i] = (uint32_t)((n - 1 - i) + ((0) << 30U));
+        state.sigma_map[1][i] = (uint32_t)((n - 1 - i) + ((1U) << 30U));
+        state.sigma_map[0][i] = (uint32_t)((n - 1 - i) + ((1U) << 31U));
     }
 
     state.widgets.emplace_back(std::move(widget));
@@ -83,20 +83,20 @@ TEST(preprocess, preprocess)
 
     waffle::Verifier verifier = waffle::preprocess(state);
 
-    state.sigma_1.resize(n);
-    state.sigma_2.resize(n);
-    state.sigma_3.resize(n);
+    state.sigma[0].resize(n);
+    state.sigma[1].resize(n);
+    state.sigma[2].resize(n);
 
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_1, state.sigma_1_mapping, state.fft_state.small_domain);
+        state.sigma[0], state.sigma_map[0], state.fft_state.small_domain);
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_2, state.sigma_2_mapping, state.fft_state.small_domain);
+        state.sigma[1], state.sigma_map[1], state.fft_state.small_domain);
     waffle::compute_permutation_lagrange_base_single(
-        state.sigma_3, state.sigma_3_mapping, state.fft_state.small_domain);
+        state.sigma[2], state.sigma_map[2], state.fft_state.small_domain);
 
-    state.w_l.ifft(state.fft_state.small_domain);
-    state.w_r.ifft(state.fft_state.small_domain);
-    state.w_o.ifft(state.fft_state.small_domain);
+    state.w[0].ifft(state.fft_state.small_domain);
+    state.w[1].ifft(state.fft_state.small_domain);
+    state.w[2].ifft(state.fft_state.small_domain);
 
     q_m->ifft(state.fft_state.small_domain);
     q_l->ifft(state.fft_state.small_domain);
@@ -104,13 +104,13 @@ TEST(preprocess, preprocess)
     q_o->ifft(state.fft_state.small_domain);
     q_c->ifft(state.fft_state.small_domain);
 
-    state.sigma_1.ifft(state.fft_state.small_domain);
-    state.sigma_2.ifft(state.fft_state.small_domain);
-    state.sigma_3.ifft(state.fft_state.small_domain);
+    state.sigma[0].ifft(state.fft_state.small_domain);
+    state.sigma[1].ifft(state.fft_state.small_domain);
+    state.sigma[2].ifft(state.fft_state.small_domain);
 
-    fr::field_t sigma_1_eval = state.sigma_1.evaluate(x, n);
-    fr::field_t sigma_2_eval = state.sigma_2.evaluate(x, n);
-    fr::field_t sigma_3_eval = state.sigma_3.evaluate(x, n);
+    fr::field_t sigma_1_eval = state.sigma[0].evaluate(x, n);
+    fr::field_t sigma_2_eval = state.sigma[1].evaluate(x, n);
+    fr::field_t sigma_3_eval = state.sigma[2].evaluate(x, n);
     fr::field_t q_m_eval = q_m->evaluate(x, n);
     fr::field_t q_l_eval = q_l->evaluate(x, n);
     fr::field_t q_r_eval = q_r->evaluate(x, n);

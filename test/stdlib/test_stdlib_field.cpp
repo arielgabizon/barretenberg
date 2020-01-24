@@ -85,9 +85,9 @@ TEST(stdlib_field, test_field_fibbonaci)
 
     fibbonaci(composer);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[16]), { { 4181, 0, 0, 0 } }), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][16]), { { 4181, 0, 0, 0 } }), true);
     EXPECT_EQ(prover.n, 32UL);
     waffle::Verifier verifier = waffle::preprocess(prover);
 
@@ -103,9 +103,9 @@ TEST(stdlib_field, test_add_mul_with_constants)
 
     uint64_t expected = fidget(composer);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[16]), { { expected, 0, 0, 0 } }), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][16]), { { expected, 0, 0, 0 } }), true);
 
     EXPECT_EQ(prover.n, 32UL);
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -123,7 +123,7 @@ TEST(stdlib_field, test_larger_circuit)
     waffle::StandardComposer composer_b = waffle::StandardComposer(n);
     generate_test_plonk_circuit(composer, n);
     generate_test_plonk_circuit(composer_b, n);
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     waffle::Verifier verifier = waffle::preprocess(prover);
 

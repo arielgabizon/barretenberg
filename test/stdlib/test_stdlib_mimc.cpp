@@ -36,7 +36,7 @@ TEST(stdlib_mimc, composer_consistency_check)
 
     EXPECT_EQ(fr::eq(standard_out.get_value(), mimc_out.get_value()), true);
 
-    waffle::Prover provers[2]{
+    waffle::Prover<3> provers[2]{
         standard_composer.preprocess(),
         mimc_composer.preprocess()
     };
@@ -69,7 +69,7 @@ TEST(stdlib_mimc, repeated_hashing)
     }
 
     stdlib::mimc7(inputs);
-    waffle::Prover prover = mimc_composer.preprocess();
+    waffle::Prover<3> prover = mimc_composer.preprocess();
 
     waffle::Verifier verifier = waffle::preprocess(prover);
 

@@ -56,13 +56,13 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
 {
     evaluation_domain domain = evaluation_domain(n);
 
-    bool inputs_valid = g1::on_curve(proof.T_LO)
-                        // && g1::on_curve(proof.T_MID)
-                        // && g1::on_curve(proof.T_HI)
-                        // && g1::on_curve(proof.W_L)
-                        // && g1::on_curve(proof.W_R)
-                        // && g1::on_curve(proof.W_O)
-                        && g1::on_curve(proof.Z_1) && g1::on_curve(proof.PI_Z);
+    bool inputs_valid = g1::on_curve(proof.T[0])
+                        // && g1::on_curve(proof.T[1])
+                        // && g1::on_curve(proof.T[2])
+                        // && g1::on_curve(proof.W[0])
+                        // && g1::on_curve(proof.W[1])
+                        // && g1::on_curve(proof.W[2])
+                        && g1::on_curve(proof.Z) && g1::on_curve(proof.PI_Z);
     // && g1::on_curve(proof.PI_Z_OMEGA);
 
     if (!inputs_valid)
@@ -89,9 +89,9 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
         return false;
     }
 
-    bool field_elements_valid = // !fr::eq(proof.w_l_eval, fr::zero)
-                                // && !fr::eq(proof.w_r_eval, fr::zero)
-                                // && !fr::eq(proof.w_o_eval, fr::zero)
+    bool field_elements_valid = // !fr::eq(proof.w_eval[0], fr::zero)
+                                // && !fr::eq(proof.w_eval[1], fr::zero)
+                                // && !fr::eq(proof.w_eval[2], fr::zero)
         /* && */                // !fr::eq(proof.z_1_shifted_eval, fr::zero)
         /* && */ !fr::eq(proof.sigma_1_eval, fr::zero) && !fr::eq(proof.sigma_2_eval, fr::zero) &&
         !fr::eq(proof.linear_eval, fr::zero);
@@ -102,7 +102,7 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     }
 
     // reconstruct challenges
-    plonk_challenges challenges;
+    g1_challenges challenges;
     fr::field_t alpha_pow[4];
     fr::field_t nu_pow[10];
     challenges.alpha = compute_alpha(proof);
@@ -114,7 +114,7 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
         polynomial_arithmetic::get_lagrange_evaluations(challenges.z, domain);
 
     // compute the terms we need to derive R(X)
-    plonk_linear_terms linear_terms = compute_linear_terms(proof, challenges, lagrange_evals.l_1, n);
+    plonk_linear_terms<3> linear_terms = compute_linear_terms<3>(proof, challenges, lagrange_evals.l_1, n);
 
     // reconstruct evaluation of quotient polynomial from prover messages
     fr::field_t t_eval;
@@ -129,14 +129,14 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     }
 
     fr::__mul(proof.sigma_1_eval, challenges.beta, T0);
-    fr::__add(proof.w_l_eval, challenges.gamma, T1);
+    fr::__add(proof.w_eval[0], challenges.gamma, T1);
     fr::__add(T0, T1, T0);
 
     fr::__mul(proof.sigma_2_eval, challenges.beta, T2);
-    fr::__add(proof.w_r_eval, challenges.gamma, T1);
+    fr::__add(proof.w_eval[1], challenges.gamma, T1);
     fr::__add(T2, T1, T2);
 
-    fr::__add(proof.w_o_eval, challenges.gamma, T3);
+    fr::__add(proof.w_eval[2], challenges.gamma, T3);
 
     fr::__mul(T0, T2, T0);
     fr::__mul(T0, T3, T0);
@@ -172,13 +172,8 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     }
 
     // reconstruct Kate opening commitments from committed values
-    fr::__mul(linear_terms.q_m, nu_pow[0], linear_terms.q_m);
-    fr::__mul(linear_terms.q_l, nu_pow[0], linear_terms.q_l);
-    fr::__mul(linear_terms.q_r, nu_pow[0], linear_terms.q_r);
-    fr::__mul(linear_terms.q_o, nu_pow[0], linear_terms.q_o);
-    fr::__mul(linear_terms.q_c, nu_pow[0], linear_terms.q_c);
     fr::__mul(linear_terms.z_1, nu_pow[0], linear_terms.z_1);
-    fr::__mul(linear_terms.sigma_3, nu_pow[0], linear_terms.sigma_3);
+    fr::__mul(linear_terms.sigma_last, nu_pow[0], linear_terms.sigma_last);
 
     fr::__mul(nu_pow[6], u, T0);
     fr::__add(linear_terms.z_1, T0, linear_terms.z_1);
@@ -188,13 +183,13 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     fr::__mul(nu_pow[0], proof.linear_eval, T0);
     fr::__add(batch_evaluation, T0, batch_evaluation);
 
-    fr::__mul(nu_pow[1], proof.w_l_eval, T0);
+    fr::__mul(nu_pow[1], proof.w_eval[0], T0);
     fr::__add(batch_evaluation, T0, batch_evaluation);
 
-    fr::__mul(nu_pow[2], proof.w_r_eval, T0);
+    fr::__mul(nu_pow[2], proof.w_eval[1], T0);
     fr::__add(batch_evaluation, T0, batch_evaluation);
 
-    fr::__mul(nu_pow[3], proof.w_o_eval, T0);
+    fr::__mul(nu_pow[3], proof.w_eval[2], T0);
     fr::__add(batch_evaluation, T0, batch_evaluation);
 
     fr::__mul(nu_pow[4], proof.sigma_1_eval, T0);
@@ -224,21 +219,21 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     }
     if (needs_w_l_shifted)
     {
-        fr::__mul(proof.w_l_shifted_eval, nu_base, T0);
+        fr::__mul(proof.w_shifted_eval[0], nu_base, T0);
         fr::__mul(T0, u, T0);
         fr::__add(batch_evaluation, T0, batch_evaluation);
         fr::__mul(nu_base, nu_pow[0], nu_base);
     }
     if (needs_w_r_shifted)
     {
-        fr::__mul(proof.w_r_shifted_eval, nu_base, T0);
+        fr::__mul(proof.w_shifted_eval[1], nu_base, T0);
         fr::__mul(T0, u, T0);
         fr::__add(batch_evaluation, T0, batch_evaluation);
         fr::__mul(nu_base, nu_pow[0], nu_base);
     }
     if (needs_w_o_shifted)
     {
-        fr::__mul(proof.w_o_shifted_eval, nu_base, T0);
+        fr::__mul(proof.w_shifted_eval[2], nu_base, T0);
         fr::__mul(T0, u, T0);
         fr::__add(batch_evaluation, T0, batch_evaluation);
         fr::__mul(nu_base, nu_pow[0], nu_base);
@@ -258,14 +253,14 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     std::vector<fr::field_t> scalars;
     std::vector<g1::affine_element> elements;
 
-    elements.emplace_back(proof.Z_1);
+    elements.emplace_back(proof.Z);
     scalars.emplace_back(linear_terms.z_1);
 
     fr::__copy(nu_pow[7], nu_base);
 
-    if (g1::on_curve(proof.W_L))
+    if (g1::on_curve(proof.W[0]))
     {
-        elements.emplace_back(proof.W_L);
+        elements.emplace_back(proof.W[0]);
         if (needs_w_l_shifted)
         {
             fr::__mul(nu_base, u, T0);
@@ -280,9 +275,9 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
         }
     }
 
-    if (g1::on_curve(proof.W_R))
+    if (g1::on_curve(proof.W[1]))
     {
-        elements.emplace_back(proof.W_R);
+        elements.emplace_back(proof.W[1]);
         if (needs_w_r_shifted)
         {
             fr::__mul(nu_base, u, T0);
@@ -296,9 +291,9 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
         }
     }
 
-    if (g1::on_curve(proof.W_O))
+    if (g1::on_curve(proof.W[2]))
     {
-        elements.emplace_back(proof.W_O);
+        elements.emplace_back(proof.W[2]);
         if (needs_w_o_shifted)
         {
             fr::__mul(nu_base, u, T0);
@@ -319,7 +314,7 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     scalars.emplace_back(nu_pow[5]);
 
     elements.emplace_back(SIGMA_3);
-    scalars.emplace_back(linear_terms.sigma_3);
+    scalars.emplace_back(linear_terms.sigma_last);
 
     elements.emplace_back(g1::affine_one());
     scalars.emplace_back(batch_evaluation);
@@ -333,15 +328,15 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     elements.emplace_back(proof.PI_Z);
     scalars.emplace_back(challenges.z);
 
-    if (g1::on_curve(proof.T_MID))
+    if (g1::on_curve(proof.T[1]))
     {
-        elements.emplace_back(proof.T_MID);
+        elements.emplace_back(proof.T[1]);
         scalars.emplace_back(z_pow_n);
     }
 
-    if (g1::on_curve(proof.T_HI))
+    if (g1::on_curve(proof.T[2]))
     {
-        elements.emplace_back(proof.T_HI);
+        elements.emplace_back(proof.T[2]);
         scalars.emplace_back(z_pow_2n);
     }
 
@@ -362,7 +357,7 @@ bool Verifier::verify_proof(const waffle::plonk_proof& proof)
     P[0] = g1::group_exponentiation_inner(proof.PI_Z_OMEGA, u);
     P[1] = scalar_multiplication::pippenger(&scalars[0], &elements[0], num_elements);
 
-    g1::mixed_add(P[1], proof.T_LO, P[1]);
+    g1::mixed_add(P[1], proof.T[0], P[1]);
     g1::mixed_add(P[0], proof.PI_Z, P[0]);
     g1::__neg(P[0], P[0]);
     g1::batch_normalize(P, 2);

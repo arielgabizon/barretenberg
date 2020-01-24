@@ -10,7 +10,7 @@
 #include "../../reference_string/reference_string.hpp"
 #include "../../waffle_types.hpp"
 
-#include "../fft_state.hpp"
+#include "../circuit_state.hpp"
 
 namespace waffle
 {
@@ -73,7 +73,7 @@ class VerifierBaseWidget
     virtual barretenberg::fr::field_t compute_batch_evaluation_contribution(barretenberg::fr::field_t& batch_eval,
                                                                             barretenberg::fr::field_t& nu_base,
                                                                             barretenberg::fr::field_t& nu_step,
-                                                                            const plonk_proof& proof) = 0;
+                                                                            const waffle::plonk_proof& proof) = 0;
 
     virtual challenge_coefficients
     append_scalar_multiplication_inputs(const challenge_coefficients& challenge,

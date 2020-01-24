@@ -55,7 +55,7 @@ class Prover
 
     // Hmm, mixing runtime polymorphism and zero-knowledge proof generation. This seems fine...
     std::vector<std::unique_ptr<ProverBaseWidget>> widgets;
-    plonk_challenges challenges{};
+    g1_challenges challenges{};
     plonk_proof proof;
     ReferenceString reference_string;
 };

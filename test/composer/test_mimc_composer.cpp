@@ -41,7 +41,7 @@ TEST(mimc_composer, test_mimc_gate_proof)
         x = x_out;
     }
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     waffle::Verifier verifier = waffle::preprocess(prover);
 

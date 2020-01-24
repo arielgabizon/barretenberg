@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <unistd.h>
+#include <vector>
 
 #include "../assert.hpp"
 #include "../types.hpp"

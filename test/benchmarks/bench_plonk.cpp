@@ -36,7 +36,7 @@ void generate_test_plonk_circuit(waffle::StandardComposer& composer, size_t num_
     }
 }
 
-waffle::Prover provers[NUM_CIRCUITS];
+waffle::Prover<3> provers[NUM_CIRCUITS];
 waffle::Verifier verifiers[NUM_CIRCUITS];
 waffle::plonk_proof proofs[NUM_CIRCUITS];
 

@@ -19,7 +19,7 @@ public:
     );
 
     barretenberg::fr::field_t compute_batch_evaluation_contribution(barretenberg::fr::field_t &batch_eval, barretenberg::fr::field_t &nu_base, barretenberg::fr::field_t &nu_step, const plonk_proof &proof);
-    void compute_quotient_evaluation_contribution(barretenberg::fr::field_t &t, const plonk_proof &proof, const plonk_challenges &challenges);
+    void compute_quotient_evaluation_contribution(barretenberg::fr::field_t &t, const plonk_proof &proof, const g1_challenges &challenges);
 };
 
 class ProverMiMCWidget : public ProverBaseWidget

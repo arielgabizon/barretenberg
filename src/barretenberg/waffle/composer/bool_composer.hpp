@@ -20,7 +20,7 @@ public:
     BoolComposer& operator=(BoolComposer &&other) = default;
     ~BoolComposer() {}
 
-    Prover preprocess() override;
+    Prover<3> preprocess() override;
 
     uint32_t add_variable(const barretenberg::fr::field_t &in) override
     {
