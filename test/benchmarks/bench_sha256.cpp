@@ -52,7 +52,7 @@ void generate_test_plonk_circuit(waffle::ExtendedComposer& composer, size_t num_
 }
 
 waffle::ExtendedComposer composers[NUM_HASHES];
-waffle::Prover provers[NUM_HASHES];
+waffle::Prover<3> provers[NUM_HASHES];
 waffle::Verifier verifiers[NUM_HASHES];
 waffle::plonk_proof proofs[NUM_HASHES];
 

@@ -73,7 +73,7 @@ class VerifierBaseWidget
     virtual barretenberg::fr::field_t compute_batch_evaluation_contribution(barretenberg::fr::field_t& batch_eval,
                                                                             barretenberg::fr::field_t& nu_base,
                                                                             barretenberg::fr::field_t& nu_step,
-                                                                            const plonk_proof& proof) = 0;
+                                                                            const waffle::plonk_proof& proof) = 0;
 
     virtual challenge_coefficients
     append_scalar_multiplication_inputs(const challenge_coefficients& challenge,
@@ -113,7 +113,7 @@ class ProverBaseWidget
 
     virtual barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base,
                                                                     const barretenberg::fr::field_t& alpha_step,
-                                                                    CircuitFFTState& circuit_state) = 0;
+                                                                    CircuitFFTState& fft_state) = 0;
     virtual barretenberg::fr::field_t compute_linear_contribution(const barretenberg::fr::field_t& alpha_base,
                                                                   const barretenberg::fr::field_t&,
                                                                   const waffle::plonk_proof& proof,

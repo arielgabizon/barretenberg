@@ -59,40 +59,40 @@ ProverBoolWidget& ProverBoolWidget::operator=(ProverBoolWidget &&other)
     return *this;
 }
 
-fr::field_t ProverBoolWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverBoolWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
-    q_bl.ifft(circuit_state.small_domain);
-    q_br.ifft(circuit_state.small_domain);
-    q_bo.ifft(circuit_state.small_domain);
+    q_bl.ifft(fft_state.small_domain);
+    q_br.ifft(fft_state.small_domain);
+    q_bo.ifft(fft_state.small_domain);
     
-    polynomial q_bl_fft = polynomial(q_bl, circuit_state.mid_domain.size);
-    polynomial q_br_fft = polynomial(q_br, circuit_state.mid_domain.size);
-    polynomial q_bo_fft = polynomial(q_bo, circuit_state.mid_domain.size);
+    polynomial q_bl_fft = polynomial(q_bl, fft_state.mid_domain.size);
+    polynomial q_br_fft = polynomial(q_br, fft_state.mid_domain.size);
+    polynomial q_bo_fft = polynomial(q_bo, fft_state.mid_domain.size);
 
-    q_bl_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_br_fft.coset_fft_with_constant(circuit_state.mid_domain, fr::mul(alpha_base, alpha_step));
-    q_bo_fft.coset_fft_with_constant(circuit_state.mid_domain, fr::mul(alpha_base, fr::sqr(alpha_step)));
+    q_bl_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_br_fft.coset_fft_with_constant(fft_state.mid_domain, fr::mul(alpha_base, alpha_step));
+    q_bo_fft.coset_fft_with_constant(fft_state.mid_domain, fr::mul(alpha_base, fr::sqr(alpha_step)));
 
-    ITERATE_OVER_DOMAIN_START(circuit_state.mid_domain);
+    ITERATE_OVER_DOMAIN_START(fft_state.mid_domain);
         fr::field_t T0;
         fr::field_t T1;
         fr::field_t T2;
-        fr::__sqr(circuit_state.w_l_fft[i * 2], T0);
-        fr::__sub(T0, circuit_state.w_l_fft[i * 2], T0);
+        fr::__sqr(fft_state.w_ffts[0][i * 2], T0);
+        fr::__sub(T0, fft_state.w_ffts[0][i * 2], T0);
         fr::__mul(T0, q_bl_fft[i], T0);
 
 
-        fr::__sqr(circuit_state.w_r_fft[i * 2], T1);
-        fr::__sub(T1, circuit_state.w_r_fft[i * 2], T1);
+        fr::__sqr(fft_state.w_ffts[1][i * 2], T1);
+        fr::__sub(T1, fft_state.w_ffts[1][i * 2], T1);
         fr::__mul(T1, q_br_fft[i], T1);
 
-        fr::__sqr(circuit_state.w_o_fft[i * 2], T2);
-        fr::__sub(T2, circuit_state.w_o_fft[i * 2], T2);
+        fr::__sqr(fft_state.w_ffts[2][i * 2], T2);
+        fr::__sub(T2, fft_state.w_ffts[2][i * 2], T2);
         fr::__mul(T2, q_bo_fft[i], T2);
     
-        fr::__add(circuit_state.quotient_mid[i], T0, circuit_state.quotient_mid[i]);
-        fr::__add(circuit_state.quotient_mid[i], T1, circuit_state.quotient_mid[i]);
-        fr::__add(circuit_state.quotient_mid[i], T2, circuit_state.quotient_mid[i]);
+        fr::__add(fft_state.quotient_mid[i], T0, fft_state.quotient_mid[i]);
+        fr::__add(fft_state.quotient_mid[i], T1, fft_state.quotient_mid[i]);
+        fr::__add(fft_state.quotient_mid[i], T2, fft_state.quotient_mid[i]);
 
     ITERATE_OVER_DOMAIN_END;
 
@@ -105,9 +105,9 @@ void ProverBoolWidget::compute_proof_elements(plonk_proof &, const fr::field_t &
 
 fr::field_t ProverBoolWidget::compute_linear_contribution(const fr::field_t &alpha_base, const fr::field_t &alpha_step, const waffle::plonk_proof &proof, const evaluation_domain& domain, polynomial &r)
 {
-    fr::field_t left_bool_multiplier = fr::mul(fr::sub(fr::sqr(proof.w_l_eval), proof.w_l_eval), alpha_base);
-    fr::field_t right_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_r_eval), proof.w_r_eval), alpha_base), alpha_step);
-    fr::field_t output_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_o_eval), proof.w_o_eval), alpha_base), fr::sqr(alpha_step));
+    fr::field_t left_bool_multiplier = fr::mul(fr::sub(fr::sqr(proof.w_eval[0]), proof.w_eval[0]), alpha_base);
+    fr::field_t right_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_eval[1]), proof.w_eval[1]), alpha_base), alpha_step);
+    fr::field_t output_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_eval[2]), proof.w_eval[2]), alpha_base), fr::sqr(alpha_step));
 
     ITERATE_OVER_DOMAIN_START(domain);
         fr::field_t T0;
@@ -191,9 +191,9 @@ VerifierBaseWidget::challenge_coefficients VerifierBoolWidget::append_scalar_mul
     std::vector<barretenberg::g1::affine_element> &points,
     std::vector<barretenberg::fr::field_t> &scalars)
 {
-    fr::field_t left_bool_multiplier = fr::mul(fr::sub(fr::sqr(proof.w_l_eval), proof.w_l_eval), challenge.alpha_base);
-    fr::field_t right_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_r_eval), proof.w_r_eval), challenge.alpha_base), challenge.alpha_step);
-    fr::field_t output_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_o_eval), proof.w_o_eval), challenge.alpha_base), fr::sqr(challenge.alpha_step));
+    fr::field_t left_bool_multiplier = fr::mul(fr::sub(fr::sqr(proof.w_eval[0]), proof.w_eval[0]), challenge.alpha_base);
+    fr::field_t right_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_eval[1]), proof.w_eval[1]), challenge.alpha_base), challenge.alpha_step);
+    fr::field_t output_bool_multiplier =  fr::mul(fr::mul(fr::sub(fr::sqr(proof.w_eval[2]), proof.w_eval[2]), challenge.alpha_base), fr::sqr(challenge.alpha_step));
 
     left_bool_multiplier = fr::mul(left_bool_multiplier, challenge.linear_nu);
     right_bool_multiplier = fr::mul(right_bool_multiplier, challenge.linear_nu);

@@ -42,7 +42,7 @@ TEST(bool_composer, test_add_gate_proofs)
     composer.create_add_gate({ a_idx, b_idx, c_idx, fr::one, fr::one, fr::neg_one(), fr::zero });
     composer.create_add_gate({ a_idx, b_idx, c_idx, fr::one, fr::one, fr::neg_one(), fr::zero });
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     waffle::Verifier verifier = waffle::preprocess(prover);
 
@@ -97,7 +97,7 @@ TEST(bool_composer, test_mul_gate_proofs)
     composer.create_add_gate({ a_idx, b_idx, c_idx, q[0], q[1], q[2], q[3] });
     composer.create_mul_gate({ a_idx, b_idx, d_idx, q[4], q[5], q[6] });
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     waffle::Verifier verifier = waffle::preprocess(prover);
 
@@ -125,7 +125,7 @@ TEST(bool_composer, test_bool_gate_proofs)
         composer.create_add_gate({ a_idx, b_idx, c_idx, fr::one, fr::one, fr::neg_one(), fr::zero });
     }
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     EXPECT_EQ(prover.n, 32UL);
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -155,7 +155,7 @@ TEST(bool_composers, test_deferred_bool_gate_proofs)
         composer.create_add_gate({ a_idx, b_idx, c_idx, fr::one, fr::one, fr::neg_one(), fr::zero });
     }
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     EXPECT_EQ(composer.get_num_gates(), 27UL + composer.get_num_constant_gates());
     EXPECT_EQ(prover.n, 32UL);
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -188,7 +188,7 @@ TEST(bool_composers, test_repeated_bool_gate_proofs)
         composer.create_bool_gate(c_idx); // heyho
     }
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     EXPECT_EQ(composer.get_num_gates(), 27UL + composer.get_num_constant_gates());
     EXPECT_EQ(prover.n, 32UL);
     waffle::Verifier verifier = waffle::preprocess(prover);

@@ -42,31 +42,31 @@ TEST(stdlib_bool, test_basic_operations)
     bool_t e = a | d;   // e = 1 = a
     bool_t f = e ^ b;  // f = 0
     d = (!f) & a; // d = 1
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[0]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[0]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[0]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][0]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][0]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][0]), {{ 1, 0, 0, 0 }}), true);
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[1]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[1]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[1]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][1]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][1]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][1]), {{ 0, 0, 0, 0 }}), true);
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[2]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[2]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[2]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][2]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][2]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][2]), {{ 1, 0, 0, 0 }}), true);
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[3]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[3]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[3]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][3]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][3]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][3]), {{ 1, 0, 0, 0 }}), true);
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[4]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[4]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[4]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][4]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][4]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][4]), {{ 0, 0, 0, 0 }}), true);
 
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_l[5]), {{ 0, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_r[5]), {{ 1, 0, 0, 0 }}), true);
-    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w_o[5]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[0][5]), {{ 0, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[1][5]), {{ 1, 0, 0, 0 }}), true);
+    EXPECT_EQ(fr::eq(fr::from_montgomery_form(prover.w[2][5]), {{ 1, 0, 0, 0 }}), true);
 
     EXPECT_EQ(prover.n, 8UL);
 }
@@ -81,7 +81,7 @@ TEST(stdlib_bool, xor)
         bool_t b = witness_t(&composer, (bool)(i % 3 == 1));
         a ^ b;
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -114,7 +114,7 @@ TEST(stdlib_bool, xor_constants)
             a ^ b;
         }
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -150,7 +150,7 @@ TEST(stdlib_bool, xor_twin_constants)
             c = c ^ a ^ b;
         }
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -168,7 +168,7 @@ TEST(stdlib_bool, and)
         bool_t b = witness_t(&composer, (bool)(i % 2 == 1));
         a & b;
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -201,7 +201,7 @@ TEST(stdlib_bool, and_constants)
             a & b;
         }
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -219,7 +219,7 @@ TEST(stdlib_bool, or)
         bool_t b = witness_t(&composer, (bool)(i % 3 == 1));
         a | b;
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -253,7 +253,7 @@ TEST(stdlib_bool, or_constants)
             a | b;
         }
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -314,7 +314,7 @@ TEST(stdlib_bool, eq)
         EXPECT_EQ(get_value(c[i]), c_alt[i]);
         EXPECT_EQ(get_value(d[i]), d_alt[i]);
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();
@@ -349,7 +349,7 @@ TEST(stdlib_bool, test_simple_proof)
         a = b;
         f = b;
     }
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
     waffle::Verifier verifier = waffle::preprocess(prover);
 
     waffle::plonk_proof proof = prover.construct_proof();

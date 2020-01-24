@@ -22,7 +22,7 @@ public:
     );
 
     barretenberg::fr::field_t compute_batch_evaluation_contribution(barretenberg::fr::field_t &batch_eval, barretenberg::fr::field_t &nu_base, barretenberg::fr::field_t &nu_step, const plonk_proof &proof);
-    void compute_quotient_evaluation_contribution(barretenberg::fr::field_t &t, const plonk_proof &proof, const plonk_challenges &challenges);
+    void compute_quotient_evaluation_contribution(barretenberg::fr::field_t &t, const plonk_proof &proof, const g1_challenges &challenges);
 };
 
 class ProverBoolWidget : public ProverBaseWidget
@@ -34,7 +34,7 @@ public:
     ProverBoolWidget& operator=(const ProverBoolWidget &other);
     ProverBoolWidget& operator=(ProverBoolWidget &&other);
 
-    barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t& alpha_step, CircuitFFTState& circuit_state);
+    barretenberg::fr::field_t compute_quotient_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t& alpha_step, CircuitFFTState& fft_state);
     barretenberg::fr::field_t compute_linear_contribution(const barretenberg::fr::field_t &alpha_base, const barretenberg::fr::field_t &, const waffle::plonk_proof &proof, const barretenberg::evaluation_domain& domain, barretenberg::polynomial &r);
     barretenberg::fr::field_t compute_opening_poly_contribution(barretenberg::fr::field_t* poly, const barretenberg::evaluation_domain &domain, const barretenberg::fr::field_t &nu_base, const barretenberg::fr::field_t &nu_step);
 

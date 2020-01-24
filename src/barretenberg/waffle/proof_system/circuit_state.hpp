@@ -5,6 +5,7 @@
 
 namespace waffle
 {
+
 class CircuitFFTState
 {
 public:
@@ -35,9 +36,11 @@ public:
         return *this;
     }
 
-    barretenberg::polynomial w_l_fft;
-    barretenberg::polynomial w_r_fft;
-    barretenberg::polynomial w_o_fft;
+//    barretenberg::polynomial w_l_fft;
+//    barretenberg::polynomial w_r_fft;
+//    barretenberg::polynomial w_o_fft;
+
+    std::vector<barretenberg::polynomial> w_ffts;
 
     barretenberg::polynomial quotient_mid;
     barretenberg::polynomial quotient_large;

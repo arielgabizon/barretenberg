@@ -44,7 +44,7 @@ TEST(stdlib_sha256, test_sha256)
     plonk::stdlib::prepare_constants(init_constants);
     plonk::stdlib::sha256_block(init_constants, inputs);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -75,7 +75,7 @@ TEST(stdlib_sha256, test_55_bytes)
     EXPECT_EQ(output[6].get_value(), 0x54a8fac7U);
     EXPECT_EQ(output[7].get_value(), 0x93791fc7U);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -105,7 +105,7 @@ TEST(stdlib_sha256, test_NIST_vector_one)
     EXPECT_EQ(output[6].get_value(), 0xB410FF61U);
     EXPECT_EQ(output[7].get_value(), 0xF20015ADU);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -136,7 +136,7 @@ TEST(stdlib_sha256, test_NIST_vector_two)
     EXPECT_EQ(output[6].get_value(), 0xF6ECEDD4U);
     EXPECT_EQ(output[7].get_value(), 0x19DB06C1U);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -176,7 +176,7 @@ TEST(stdlib_sha256, test_NIST_vector_three)
     EXPECT_EQ(output[6].get_value(), 0xe11204c0U);
     EXPECT_EQ(output[7].get_value(), 0x8ffe732bU);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -209,7 +209,7 @@ TEST(stdlib_sha256, test_NIST_vector_four)
     EXPECT_EQ(output[6].get_value(), 0xbd56c61cU);
     EXPECT_EQ(output[7].get_value(), 0xcccd9504U);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);
@@ -250,7 +250,7 @@ TEST(stdlib_sha256, test_NIST_vector_five)
     EXPECT_EQ(output[6].get_value(), 0xa519105aU);
     EXPECT_EQ(output[7].get_value(), 0x1eadd6e4U);
 
-    waffle::Prover prover = composer.preprocess();
+    waffle::Prover<3> prover = composer.preprocess();
 
     printf("composer gates = %lu\n", composer.get_num_gates());
     waffle::Verifier verifier = waffle::preprocess(prover);

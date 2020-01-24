@@ -3,6 +3,7 @@
 #include "../../../curves/bn254/fr.hpp"
 #include "../common.hpp"
 #include "../bool/bool.hpp"
+#include <unistd.h>
 
 namespace plonk
 {

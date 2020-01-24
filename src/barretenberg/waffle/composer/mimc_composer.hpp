@@ -29,7 +29,7 @@ public:
 
     ~MiMCComposer() {}
 
-    Prover preprocess() override;
+    Prover<3> preprocess() override;
 
     void create_add_gate(const add_triple &in) override;
     void create_mul_gate(const mul_triple &in) override;

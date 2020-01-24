@@ -55,33 +55,33 @@ ProverMiMCWidget& ProverMiMCWidget::operator=(ProverMiMCWidget &&other)
     return *this;
 }
 
-fr::field_t ProverMiMCWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverMiMCWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
-    q_mimc_selector.ifft(circuit_state.small_domain);
-    q_mimc_coefficient.ifft(circuit_state.small_domain);
+    q_mimc_selector.ifft(fft_state.small_domain);
+    q_mimc_coefficient.ifft(fft_state.small_domain);
 
-    polynomial q_mimc_selector_fft = polynomial(q_mimc_selector, circuit_state.large_domain.size);
-    polynomial q_mimc_coefficient_fft = polynomial(q_mimc_coefficient, circuit_state.large_domain.size);
+    polynomial q_mimc_selector_fft = polynomial(q_mimc_selector, fft_state.large_domain.size);
+    polynomial q_mimc_coefficient_fft = polynomial(q_mimc_coefficient, fft_state.large_domain.size);
 
-    q_mimc_selector_fft.coset_fft_with_constant(circuit_state.large_domain, alpha_base);
-    q_mimc_coefficient_fft.coset_fft(circuit_state.large_domain);
-    ITERATE_OVER_DOMAIN_START(circuit_state.large_domain);
+    q_mimc_selector_fft.coset_fft_with_constant(fft_state.large_domain, alpha_base);
+    q_mimc_coefficient_fft.coset_fft(fft_state.large_domain);
+    ITERATE_OVER_DOMAIN_START(fft_state.large_domain);
         fr::field_t T0;
         fr::field_t T1;
         fr::field_t T2;
-        fr::__add_with_coarse_reduction(circuit_state.w_o_fft[i], circuit_state.w_l_fft[i], T0); // T0 = w_o + w_l
+        fr::__add_with_coarse_reduction(fft_state.w_ffts[2][i], fft_state.w_ffts[0][i], T0); // T0 = w_o + w_l
         fr::__add_with_coarse_reduction(T0, q_mimc_coefficient_fft[i], T0);  // T0 = (w_o + w_l + q_c)
         fr::__sqr_with_coarse_reduction(T0, T1);              // T1 = (w_o + w_l + q_c)^2
         fr::__mul_with_coarse_reduction(T1, T0, T1);          // T1 = (w_o + w_l + q_c)^3
-        fr::__sub_with_coarse_reduction(T1, circuit_state.w_r_fft[i], T1); // T1 = (w_o + w_l + q_c)^3 - w_r
-        fr::__sqr_with_coarse_reduction(circuit_state.w_r_fft[i], T2); // T2 = w_r^2
+        fr::__sub_with_coarse_reduction(T1, fft_state.w_ffts[1][i], T1); // T1 = (w_o + w_l + q_c)^3 - w_r
+        fr::__sqr_with_coarse_reduction(fft_state.w_ffts[1][i], T2); // T2 = w_r^2
         fr::__mul_with_coarse_reduction(T2, T0, T2);  // T2 = (w_o + w_l + q_c).w_r^2 
-        fr::__sub_with_coarse_reduction(T2, circuit_state.w_o_fft[i + 4], T2); // T2 = (w_o + w_l + q_c).w_r^2 - w_{o.next}
+        fr::__sub_with_coarse_reduction(T2, fft_state.w_ffts[2][i + 4], T2); // T2 = (w_o + w_l + q_c).w_r^2 - w_{o.next}
         fr::__mul_with_coarse_reduction(T2, alpha_step, T2);  // T2 = (w_o + w_l + q_c).w_r^2 - w_{o.next}).alpha
         fr::__add_with_coarse_reduction(T1, T2, T1);  // T1 = ((w_o + w_l + q_c)^3 - w_r) + (w_o + w_l + q_c).w_r^2 - w_{o.next}).alpha
 
         fr::__mul(T1, q_mimc_selector_fft[i], T1); // T1 = (((w_o + w_l + q_c)^3 - w_r) + (w_o + w_l + q_c).w_r^2 - w_{o.next}).alpha).q_mimc
-        fr::__add(circuit_state.quotient_large[i], T1, circuit_state.quotient_large[i]);
+        fr::__add(fft_state.quotient_large[i], T1, fft_state.quotient_large[i]);
     ITERATE_OVER_DOMAIN_END;
 
     return fr::mul(alpha_base, fr::sqr(alpha_step));
@@ -94,11 +94,11 @@ void ProverMiMCWidget::compute_proof_elements(plonk_proof &proof, const fr::fiel
 
 fr::field_t ProverMiMCWidget::compute_linear_contribution(const fr::field_t &alpha_base, const fr::field_t &alpha_step, const waffle::plonk_proof &proof, const evaluation_domain& domain, polynomial &r)
 {
-    fr::field_t mimc_T0 = fr::add(fr::add(proof.w_o_eval, proof.w_l_eval), proof.q_mimc_coefficient_eval);
+    fr::field_t mimc_T0 = fr::add(fr::add(proof.w_eval[2], proof.w_eval[0]), proof.q_mimc_coefficient_eval);
     fr::field_t mimc_a = fr::sqr(mimc_T0);
     mimc_a = fr::mul(mimc_a, mimc_T0);
-    mimc_a = fr::sub(mimc_a, proof.w_r_eval);
-    fr::field_t mimc_term = fr::mul(fr::sub(fr::mul(fr::sqr(proof.w_r_eval), mimc_T0), proof.w_o_shifted_eval), alpha_step);
+    mimc_a = fr::sub(mimc_a, proof.w_eval[1]);
+    fr::field_t mimc_term = fr::mul(fr::sub(fr::mul(fr::sqr(proof.w_eval[1]), mimc_T0), proof.w_shifted_eval[2]), alpha_step);
     mimc_term = fr::mul(fr::add(mimc_term, mimc_a), alpha_base);
 
     ITERATE_OVER_DOMAIN_START(domain);
@@ -189,11 +189,11 @@ VerifierBaseWidget::challenge_coefficients VerifierMiMCWidget::append_scalar_mul
         scalars.push_back(challenge.nu_base);
     }
 
-    fr::field_t mimc_T0 = fr::add(fr::add(proof.w_o_eval, proof.w_l_eval), proof.q_mimc_coefficient_eval);
+    fr::field_t mimc_T0 = fr::add(fr::add(proof.w_eval[2], proof.w_eval[0]), proof.q_mimc_coefficient_eval);
     fr::field_t mimc_a = fr::sqr(mimc_T0);
     mimc_a = fr::mul(mimc_a, mimc_T0);
-    mimc_a = fr::sub(mimc_a, proof.w_r_eval);
-    fr::field_t q_mimc_term = fr::mul(fr::sub(fr::mul(fr::sqr(proof.w_r_eval), mimc_T0), proof.w_o_shifted_eval), challenge.alpha_step);
+    mimc_a = fr::sub(mimc_a, proof.w_eval[1]);
+    fr::field_t q_mimc_term = fr::mul(fr::sub(fr::mul(fr::sqr(proof.w_eval[1]), mimc_T0), proof.w_shifted_eval[2]), challenge.alpha_step);
     q_mimc_term = fr::mul(fr::add(q_mimc_term, mimc_a), challenge.alpha_base);
     q_mimc_term = fr::mul(q_mimc_term, challenge.linear_nu);
 

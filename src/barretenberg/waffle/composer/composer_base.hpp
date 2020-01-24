@@ -107,7 +107,7 @@ class ComposerBase
     virtual ~ComposerBase() {};
 
     virtual size_t get_num_gates() const { return n; }
-    virtual Prover preprocess() = 0;
+    virtual Prover<3> preprocess() = 0;
 
     virtual bool supports_feature(const Features target_feature)
     {
@@ -160,22 +160,22 @@ class ComposerBase
         wire_epicycles[b_idx] = std::vector<epicycle>();
     }
 
-    virtual void compute_sigma_permutations(Prover& output_state)
+    virtual void compute_sigma_permutations(Prover<3>& output_state)
     {
         // create basic 'identity' permutation
-        output_state.sigma_1_mapping.reserve(output_state.n);
-        output_state.sigma_2_mapping.reserve(output_state.n);
-        output_state.sigma_3_mapping.reserve(output_state.n);
+        output_state.sigma_map[0].reserve(output_state.n);
+        output_state.sigma_map[1].reserve(output_state.n);
+        output_state.sigma_map[2].reserve(output_state.n);
         for (size_t i = 0; i < output_state.n; ++i)
         {
-            output_state.sigma_1_mapping.emplace_back(static_cast<uint32_t>(i));
-            output_state.sigma_2_mapping.emplace_back(static_cast<uint32_t>(i) + (1U << 30U));
-            output_state.sigma_3_mapping.emplace_back(static_cast<uint32_t>(i) + (1U << 31U));
+            output_state.sigma_map[0].emplace_back(static_cast<uint32_t>(i));
+            output_state.sigma_map[1].emplace_back(static_cast<uint32_t>(i) + (1U << 30U));
+            output_state.sigma_map[2].emplace_back(static_cast<uint32_t>(i) + (1U << 31U));
         }
 
-        uint32_t* sigmas[3]{ &output_state.sigma_1_mapping[0],
-                             &output_state.sigma_2_mapping[0],
-                             &output_state.sigma_3_mapping[0] };
+        uint32_t* sigmas[3]{ &output_state.sigma_map[0][0],
+                             &output_state.sigma_map[1][0],
+                             &output_state.sigma_map[2][0] };
 
         for (size_t i = 0; i < wire_epicycles.size(); ++i)
         {

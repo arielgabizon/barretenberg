@@ -44,18 +44,18 @@ ProverSequentialWidget& ProverSequentialWidget::operator=(ProverSequentialWidget
     return *this;
 }
 
-fr::field_t ProverSequentialWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverSequentialWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
     barretenberg::fr::field_t old_alpha = barretenberg::fr::mul(alpha_base, barretenberg::fr::invert(alpha_step));
-    q_o_next.ifft(circuit_state.small_domain);
+    q_o_next.ifft(fft_state.small_domain);
 
-    polynomial q_o_next_fft = polynomial(q_o_next, circuit_state.mid_domain.size);
+    polynomial q_o_next_fft = polynomial(q_o_next, fft_state.mid_domain.size);
 
-    q_o_next_fft.coset_fft_with_constant(circuit_state.mid_domain, old_alpha);
+    q_o_next_fft.coset_fft_with_constant(fft_state.mid_domain, old_alpha);
 
-    ITERATE_OVER_DOMAIN_START(circuit_state.mid_domain);
-        fr::__mul(circuit_state.w_o_fft.at(2 * i + 4), q_o_next_fft.at(i), q_o_next_fft.at(i)); // w_l * q_m = rdx
-        fr::__add(circuit_state.quotient_mid.at(i), q_o_next_fft.at(i), circuit_state.quotient_mid.at(i));
+    ITERATE_OVER_DOMAIN_START(fft_state.mid_domain);
+        fr::__mul(fft_state.w_ffts[2].at(2 * i + 4), q_o_next_fft.at(i), q_o_next_fft.at(i)); // w_l * q_m = rdx
+        fr::__add(fft_state.quotient_mid.at(i), q_o_next_fft.at(i), fft_state.quotient_mid.at(i));
     ITERATE_OVER_DOMAIN_END;
 
     return alpha_base;
@@ -66,7 +66,7 @@ fr::field_t ProverSequentialWidget::compute_linear_contribution(const fr::field_
     barretenberg::fr::field_t old_alpha = barretenberg::fr::mul(alpha_base, barretenberg::fr::invert(alpha_step));
     ITERATE_OVER_DOMAIN_START(domain);
         fr::field_t T0;
-        fr::__mul(proof.w_o_shifted_eval, q_o_next.at(i), T0);
+        fr::__mul(proof.w_shifted_eval[2], q_o_next.at(i), T0);
         fr::__mul(T0, old_alpha, T0);
         fr::__add(r.at(i), T0, r.at(i));
     ITERATE_OVER_DOMAIN_END;
@@ -129,7 +129,7 @@ VerifierBaseWidget::challenge_coefficients VerifierSequentialWidget::append_scal
 
     // Q_M term = w_l * w_r * challenge.alpha_base * nu
     fr::field_t q_o_next_term;
-    fr::__mul(proof.w_o_shifted_eval, old_alpha, q_o_next_term);
+    fr::__mul(proof.w_shifted_eval[2], old_alpha, q_o_next_term);
     fr::__mul(q_o_next_term, challenge.linear_nu, q_o_next_term);
 
     

@@ -63,37 +63,37 @@ ProverArithmeticWidget& ProverArithmeticWidget::operator=(ProverArithmeticWidget
     return *this;
 }
 
-fr::field_t ProverArithmeticWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& circuit_state)
+fr::field_t ProverArithmeticWidget::compute_quotient_contribution(const barretenberg::fr::field_t& alpha_base, const barretenberg::fr::field_t &alpha_step, CircuitFFTState& fft_state)
 {
-    q_m.ifft(circuit_state.small_domain);
-    q_l.ifft(circuit_state.small_domain);
-    q_r.ifft(circuit_state.small_domain);
-    q_o.ifft(circuit_state.small_domain);
-    q_c.ifft(circuit_state.small_domain);
+    q_m.ifft(fft_state.small_domain);
+    q_l.ifft(fft_state.small_domain);
+    q_r.ifft(fft_state.small_domain);
+    q_o.ifft(fft_state.small_domain);
+    q_c.ifft(fft_state.small_domain);
 
-    polynomial q_m_fft = polynomial(q_m, circuit_state.mid_domain.size);
-    polynomial q_l_fft = polynomial(q_l, circuit_state.mid_domain.size);
-    polynomial q_r_fft = polynomial(q_r, circuit_state.mid_domain.size);
-    polynomial q_o_fft = polynomial(q_o, circuit_state.mid_domain.size);
-    polynomial q_c_fft = polynomial(q_c, circuit_state.mid_domain.size);
+    polynomial q_m_fft = polynomial(q_m, fft_state.mid_domain.size);
+    polynomial q_l_fft = polynomial(q_l, fft_state.mid_domain.size);
+    polynomial q_r_fft = polynomial(q_r, fft_state.mid_domain.size);
+    polynomial q_o_fft = polynomial(q_o, fft_state.mid_domain.size);
+    polynomial q_c_fft = polynomial(q_c, fft_state.mid_domain.size);
 
-    q_m_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_l_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_r_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_o_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
-    q_c_fft.coset_fft_with_constant(circuit_state.mid_domain, alpha_base);
+    q_m_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_l_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_r_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_o_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
+    q_c_fft.coset_fft_with_constant(fft_state.mid_domain, alpha_base);
 
-    ITERATE_OVER_DOMAIN_START(circuit_state.mid_domain);
-        fr::__mul(circuit_state.w_l_fft.at(2 * i), q_m_fft.at(i), q_m_fft.at(i)); // w_l * q_m = rdx
-        fr::__mul(q_m_fft.at(i), circuit_state.w_r_fft.at(2 * i), q_m_fft.at(i)); // w_l * w_r * q_m = rdx
-        fr::__mul(circuit_state.w_l_fft.at(2 * i), q_l_fft.at(i), q_l_fft.at(i)); // w_l * q_l = rdi
-        fr::__mul(circuit_state.w_r_fft.at(2 * i), q_r_fft.at(i), q_r_fft.at(i)); // w_r * q_r = rsi
-        fr::__mul(circuit_state.w_o_fft.at(2 * i), q_o_fft.at(i),  q_o_fft.at(i)); // w_o * q_o = r8
+    ITERATE_OVER_DOMAIN_START(fft_state.mid_domain);
+        fr::__mul(fft_state.w_ffts[0].at(2 * i), q_m_fft.at(i), q_m_fft.at(i)); // w_l * q_m = rdx
+        fr::__mul(q_m_fft.at(i), fft_state.w_ffts[1].at(2 * i), q_m_fft.at(i)); // w_l * w_r * q_m = rdx
+        fr::__mul(fft_state.w_ffts[0].at(2 * i), q_l_fft.at(i), q_l_fft.at(i)); // w_l * q_l = rdi
+        fr::__mul(fft_state.w_ffts[1].at(2 * i), q_r_fft.at(i), q_r_fft.at(i)); // w_r * q_r = rsi
+        fr::__mul(fft_state.w_ffts[2].at(2 * i), q_o_fft.at(i),  q_o_fft.at(i)); // w_o * q_o = r8
         fr::__add(q_m_fft.at(i), q_l_fft.at(i), q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l = rdx
         fr::__add(q_r_fft.at(i), q_o_fft.at(i),  q_r_fft.at(i)); // q_r * w_r + q_o * w_o = rsi
         fr::__add(q_m_fft.at(i), q_r_fft.at(i),  q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l + q_r * w_r + q_o * w_o = rdx
         fr::__add(q_m_fft.at(i), q_c_fft.at(i),  q_m_fft.at(i)); // q_m * w_l * w_r + w_l * q_l + q_r * w_r + q_o * w_o + q_c = rdx
-        fr::__add(circuit_state.quotient_mid.at(i), q_m_fft.at(i), circuit_state.quotient_mid.at(i));
+        fr::__add(fft_state.quotient_mid.at(i), q_m_fft.at(i), fft_state.quotient_mid.at(i));
     ITERATE_OVER_DOMAIN_END;
 
     return fr::mul(alpha_base, alpha_step);
@@ -101,16 +101,16 @@ fr::field_t ProverArithmeticWidget::compute_quotient_contribution(const barreten
 
 fr::field_t ProverArithmeticWidget::compute_linear_contribution(const fr::field_t &alpha_base, const fr::field_t &alpha_step, const waffle::plonk_proof &proof, const evaluation_domain& domain, polynomial &r)
 {
-    fr::field_t w_lr = fr::mul(proof.w_l_eval, proof.w_r_eval);
+    fr::field_t w_lr = fr::mul(proof.w_eval[0], proof.w_eval[1]);
     ITERATE_OVER_DOMAIN_START(domain);
         fr::field_t T0;
         fr::field_t T1;
         fr::field_t T2;
         fr::field_t T3;
         fr::__mul(w_lr, q_m.at(i), T0);
-        fr::__mul(proof.w_l_eval, q_l.at(i), T1);
-        fr::__mul(proof.w_r_eval, q_r.at(i), T2);
-        fr::__mul(proof.w_o_eval, q_o.at(i), T3);
+        fr::__mul(proof.w_eval[0], q_l.at(i), T1);
+        fr::__mul(proof.w_eval[1], q_r.at(i), T2);
+        fr::__mul(proof.w_eval[2], q_o.at(i), T3);
         fr::__add(T0, T1, T0);
         fr::__add(T2, T3, T2);
         fr::__add(T0, T2, T0);
@@ -191,7 +191,7 @@ VerifierBaseWidget::challenge_coefficients VerifierArithmeticWidget::append_scal
 {
     // Q_M term = w_l * w_r * challenge.alpha_base * nu
     fr::field_t q_m_term;
-    fr::__mul(proof.w_l_eval, proof.w_r_eval, q_m_term);
+    fr::__mul(proof.w_eval[0], proof.w_eval[1], q_m_term);
     fr::__mul(q_m_term, challenge.alpha_base, q_m_term);
     fr::__mul(q_m_term, challenge.linear_nu, q_m_term);
     if (g1::on_curve(instance[0]))
@@ -201,7 +201,7 @@ VerifierBaseWidget::challenge_coefficients VerifierArithmeticWidget::append_scal
     }
 
     fr::field_t q_l_term;
-    fr::__mul(proof.w_l_eval, challenge.alpha_base, q_l_term);
+    fr::__mul(proof.w_eval[0], challenge.alpha_base, q_l_term);
     fr::__mul(q_l_term, challenge.linear_nu, q_l_term);
     if (g1::on_curve(instance[1]))
     {
@@ -211,7 +211,7 @@ VerifierBaseWidget::challenge_coefficients VerifierArithmeticWidget::append_scal
 
 
     fr::field_t q_r_term;
-    fr::__mul(proof.w_r_eval, challenge.alpha_base, q_r_term);
+    fr::__mul(proof.w_eval[1], challenge.alpha_base, q_r_term);
     fr::__mul(q_r_term, challenge.linear_nu, q_r_term);
     if (g1::on_curve(instance[2]))
     {
@@ -220,7 +220,7 @@ VerifierBaseWidget::challenge_coefficients VerifierArithmeticWidget::append_scal
     }
 
     fr::field_t q_o_term;
-    fr::__mul(proof.w_o_eval, challenge.alpha_base, q_o_term);
+    fr::__mul(proof.w_eval[2], challenge.alpha_base, q_o_term);
     fr::__mul(q_o_term, challenge.linear_nu, q_o_term);
     if (g1::on_curve(instance[3]))
     {
